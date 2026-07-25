@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "moto-rental-mcp",
+      "version": "0.1.0",
+      "title": "Moto Rental MCP"
+    },
+    "tools": [
+      {
+        "name": "list_bikes",
+        "title": "List motorbikes",
+        "description": "List motorbikes in the rental catalog with pricing, engine size, transmission, and current availability. Optionally filter by category or availability.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "enum": [
+                "Manual",
+                "Automatic",
+                "Semi-Automatic"
+              ],
+              "description": "Filter by transmission category."
+            },
+            "availableOnly": {
+              "type": "boolean",
+              "description": "If true, only bikes currently available for rent are returned."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_bike",
+        "title": "Get bike details",
+        "description": "Get full details for a single motorbike by id, including description, image gallery, deposit, and daily/weekly/monthly pricing.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The bike id (e.g. 'b1')."
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "estimate_price",
+        "title": "Estimate rental price",
+        "description": "Estimate the total rental price for a bike given a number of days. Uses the shop's tiered pricing curve (daily / weekly / monthly rates).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The bike id (e.g. 'b1')."
+            },
+            "totalDays": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Total rental duration in days."
+            }
+          },
+          "required": [
+            "id",
+            "totalDays"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
