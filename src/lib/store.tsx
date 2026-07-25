@@ -201,7 +201,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           sale_price: b.salePrice,
         };
         const { data, error } = await supabase.from("bikes").insert(row).select().single();
-        if (!error && data) setBikes((prev) => [mapBike(data as Record<string, unknown>), ...prev]);
+        if (error) throw new Error(error.message);
+        if (data) setBikes((prev) => [mapBike(data as Record<string, unknown>), ...prev]);
       },
 
       updateBike: async (id, b) => {
@@ -223,7 +224,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (b.isForSale !== undefined) row.is_for_sale = b.isForSale;
         if (b.salePrice !== undefined) row.sale_price = b.salePrice;
         const { error } = await supabase.from("bikes").update(row).eq("id", id);
-        if (!error) setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, ...b } : x)));
+        if (error) throw new Error(error.message);
+        setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, ...b } : x)));
       },
 
       removeBike: async (id) => {

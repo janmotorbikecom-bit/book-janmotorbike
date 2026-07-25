@@ -62,6 +62,7 @@ export function BikeForm({
   const [images, setImages] = useState<string[]>(initialImages);
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [cropQueue, setCropQueue] = useState<File[]>([]);
   const [currentCropUrl, setCurrentCropUrl] = useState<string>("");
@@ -185,7 +186,7 @@ export function BikeForm({
     );
   }
 
-  function submit() {
+  async function submit() {
     if (!name || images.length === 0) {
       toast.error(t("toast_req"));
       return;
@@ -208,19 +209,31 @@ export function BikeForm({
       isForSale,
       salePrice: isForSale ? parseNum(salePrice) : undefined,
     };
-    if (isEdit && initial?.id) {
-      updateBike(initial.id, payload);
-      toast.success(t("toast_updated"));
-    } else {
-      addBike(payload);
-      toast.success(mode === "clone" ? t("toast_duplicated") : t("toast_added"));
+    setSaving(true);
+    try {
+      if (isEdit && initial?.id) {
+        await updateBike(initial.id, payload);
+        toast.success(t("toast_updated"));
+      } else {
+        await addBike(payload);
+        toast.success(mode === "clone" ? t("toast_duplicated") : t("toast_added"));
+      }
+      onDone?.();
+    } catch (err) {
+      console.error("[BikeForm] save error:", err);
+      toast.error(
+        lang === "vi"
+          ? "Lưu thất bại! Vui lòng kiểm tra kết nối hoặc thử lại."
+          : "Save failed! Please check your connection and try again.",
+      );
+    } finally {
+      setSaving(false);
     }
-    onDone?.();
   }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    submit();
+    void submit();
   }
 
   // Enter to submit on inputs; Ctrl/Cmd+Enter in textarea.
@@ -231,7 +244,7 @@ export function BikeForm({
     if (tag === "TEXTAREA") {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
-        submit();
+        void submit();
       }
       return;
     }
@@ -239,7 +252,7 @@ export function BikeForm({
       const type = (target as HTMLInputElement).type;
       if (type === "file") return;
       e.preventDefault();
-      submit();
+      void submit();
     }
   }
 
@@ -488,8 +501,23 @@ export function BikeForm({
         <Button type="button" variant="outline" onClick={onDone}>
           {t("admin_cancel")}
         </Button>
-        <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/90">
-          {isEdit ? t("form_save_changes") : mode === "clone" ? t("form_save_dup") : t("admin_add")}
+        <Button
+          type="submit"
+          disabled={saving}
+          className="bg-accent text-accent-foreground hover:bg-accent/90"
+        >
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              {lang === "vi" ? "Đang lưu..." : "Saving..."}
+            </>
+          ) : isEdit ? (
+            t("form_save_changes")
+          ) : mode === "clone" ? (
+            t("form_save_dup")
+          ) : (
+            t("admin_add")
+          )}
         </Button>
       </div>
 
