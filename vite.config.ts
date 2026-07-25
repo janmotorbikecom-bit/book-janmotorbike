@@ -14,6 +14,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  nitro: {
+    // Target Vercel serverless functions
+    preset: "vercel",
+  },
   vite: {
     // plugins: [mcpPlugin()],
   },

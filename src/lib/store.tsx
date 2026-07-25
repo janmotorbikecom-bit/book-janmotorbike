@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { supabase } from "./supabase";
 import {
   seedBikes,
   DEFAULT_PRICING_TIERS,
@@ -30,8 +31,8 @@ export type Booking = {
   bikeId: string;
   customerName: string;
   phone: string;
-  fromDate: string; // ISO string
-  toDate: string; // ISO string
+  fromDate: string;
+  toDate: string;
   total: number;
   status: "pending" | "confirmed" | "completed" | "cancelled";
   createdAt: string;
@@ -43,21 +44,68 @@ type Store = {
   reviews: Review[];
   bookings: Booking[];
   pricingTiers: Record<number, number[]>;
-  addBike: (b: Omit<Bike, "id">) => void;
-  updateBike: (id: string, b: Partial<Bike>) => void;
-  removeBike: (id: string) => void;
-  toggleAvailable: (id: string) => void;
-  setSettings: (s: Settings) => void;
-  addReview: (r: Omit<Review, "id" | "createdAt">) => void;
-  addBooking: (b: Omit<Booking, "id" | "createdAt">) => void;
-  updateBookingStatus: (id: string, status: Booking["status"]) => void;
-  updatePricingTier: (rate: number, prices: number[]) => void;
-  removePricingTier: (rate: number) => void;
+  loading: boolean;
+  addBike: (b: Omit<Bike, "id">) => Promise<void>;
+  updateBike: (id: string, b: Partial<Bike>) => Promise<void>;
+  removeBike: (id: string) => Promise<void>;
+  toggleAvailable: (id: string) => Promise<void>;
+  setSettings: (s: Settings) => Promise<void>;
+  addReview: (r: Omit<Review, "id" | "createdAt">) => Promise<void>;
+  addBooking: (b: Omit<Booking, "id" | "createdAt">) => Promise<void>;
+  updateBookingStatus: (id: string, status: Booking["status"]) => Promise<void>;
+  updatePricingTier: (rate: number, prices: number[]) => Promise<void>;
+  removePricingTier: (rate: number) => Promise<void>;
 };
 
 const StoreCtx = createContext<Store | null>(null);
 
-const LS_KEY = "moto-rental-store-v4";
+// ── Mappers: Supabase snake_case ↔ App camelCase ──────────────────
+function mapBike(row: Record<string, unknown>): Bike {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    brand: row.brand as string | undefined,
+    category: row.category as Bike["category"],
+    engineCc: row.engine_cc as number,
+    transmission: row.transmission as Bike["transmission"],
+    pricePerDay: row.price_per_day as number,
+    pricePerWeek: row.price_per_week as number,
+    pricePerMonth: row.price_per_month as number,
+    deposit: row.deposit as number,
+    description: row.description as string,
+    descriptionVi: row.description_vi as string | undefined,
+    imageUrl: row.image_url as string,
+    images: row.images as string[] | undefined,
+    available: row.available as boolean,
+    isForSale: row.is_for_sale as boolean | undefined,
+    salePrice: row.sale_price as number | undefined,
+  };
+}
+
+function mapReview(row: Record<string, unknown>): Review {
+  return {
+    id: row.id as string,
+    bikeId: row.bike_id as string,
+    rating: row.rating as number,
+    comment: row.comment as string,
+    authorName: row.author_name as string,
+    createdAt: row.created_at as string,
+  };
+}
+
+function mapBooking(row: Record<string, unknown>): Booking {
+  return {
+    id: row.id as string,
+    bikeId: row.bike_id as string,
+    customerName: row.customer_name as string,
+    phone: row.phone as string,
+    fromDate: row.from_date as string,
+    toDate: row.to_date as string,
+    total: row.total as number,
+    status: row.status as Booking["status"],
+    createdAt: row.created_at as string,
+  };
+}
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [bikes, setBikes] = useState<Bike[]>(seedBikes);
@@ -69,36 +117,61 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     messenger: "motorent",
     ownerName: "Jan",
   });
-  const [pricingTiers, setPricingTiers] = useState<Record<number, number[]>>(DEFAULT_PRICING_TIERS);
+  const [pricingTiers, setPricingTiers] =
+    useState<Record<number, number[]>>(DEFAULT_PRICING_TIERS);
+  const [loading, setLoading] = useState(true);
 
-  const [hydrated, setHydrated] = useState(false);
-
+  // ── Load all data from Supabase on mount ──────────────────────
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.bikes) setBikes(parsed.bikes);
-        if (parsed.reviews) setReviews(parsed.reviews);
-        if (parsed.bookings) setBookings(parsed.bookings);
-        if (parsed.settings) setSettingsState((s) => ({ ...s, ...parsed.settings }));
-        if (parsed.pricingTiers)
-          // Merge: DEFAULT_PRICING_TIERS takes precedence for any new rates added in code;
-          // user-edited values in localStorage override defaults for existing rates
-          setPricingTiers({ ...DEFAULT_PRICING_TIERS, ...parsed.pricingTiers });
+    async function loadAll() {
+      setLoading(true);
+      try {
+        const [
+          { data: bikesData },
+          { data: reviewsData },
+          { data: bookingsData },
+          { data: settingsData },
+          { data: tiersData },
+        ] = await Promise.all([
+          supabase.from("bikes").select("*").order("created_at", { ascending: false }),
+          supabase.from("reviews").select("*").order("created_at", { ascending: false }),
+          supabase.from("bookings").select("*").order("created_at", { ascending: false }),
+          supabase.from("settings").select("*").eq("id", 1).single(),
+          supabase.from("pricing_tiers").select("*").order("rate"),
+        ]);
+
+        if (bikesData && bikesData.length > 0)
+          setBikes(bikesData.map((r) => mapBike(r as Record<string, unknown>)));
+        if (reviewsData)
+          setReviews(reviewsData.map((r) => mapReview(r as Record<string, unknown>)));
+        if (bookingsData)
+          setBookings(bookingsData.map((r) => mapBooking(r as Record<string, unknown>)));
+        if (settingsData) {
+          const s = settingsData as Record<string, unknown>;
+          setSettingsState({
+            whatsapp: s.whatsapp as string,
+            zalo: s.zalo as string,
+            messenger: s.messenger as string,
+            ownerName: s.owner_name as string,
+          });
+        }
+        if (tiersData && tiersData.length > 0) {
+          const merged: Record<number, number[]> = { ...DEFAULT_PRICING_TIERS };
+          (tiersData as { rate: number; prices: number[] }[]).forEach((t) => {
+            merged[t.rate] = t.prices;
+          });
+          setPricingTiers(merged);
+        }
+      } catch (e) {
+        console.error("Failed to load from Supabase, using defaults.", e);
+      } finally {
+        setLoading(false);
       }
-    } catch {}
-    setHydrated(true);
+    }
+    loadAll();
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(
-      LS_KEY,
-      JSON.stringify({ bikes, settings, reviews, bookings, pricingTiers }),
-    );
-  }, [bikes, settings, reviews, bookings, pricingTiers, hydrated]);
-
+  // ── Actions ───────────────────────────────────────────────────
   const value = useMemo<Store>(
     () => ({
       bikes,
@@ -106,34 +179,125 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       reviews,
       bookings,
       pricingTiers,
-      addBike: (b) => setBikes((prev) => [{ ...b, id: crypto.randomUUID() }, ...prev]),
-      updateBike: (id, b) =>
-        setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, ...b } : x))),
-      removeBike: (id) => setBikes((prev) => prev.filter((x) => x.id !== id)),
-      toggleAvailable: (id) =>
-        setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, available: !x.available } : x))),
-      setSettings: (s) => setSettingsState(s),
-      addReview: (r) =>
-        setReviews((prev) => [
-          { ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() },
-          ...prev,
-        ]),
-      addBooking: (b) =>
-        setBookings((prev) => [
-          { ...b, id: crypto.randomUUID(), createdAt: new Date().toISOString() },
-          ...prev,
-        ]),
-      updateBookingStatus: (id, status) =>
-        setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x))),
-      updatePricingTier: (rate, prices) => setPricingTiers((prev) => ({ ...prev, [rate]: prices })),
-      removePricingTier: (rate) =>
+      loading,
+
+      addBike: async (b) => {
+        const row = {
+          name: b.name,
+          brand: b.brand,
+          category: b.category,
+          engine_cc: b.engineCc,
+          transmission: b.transmission,
+          price_per_day: b.pricePerDay,
+          price_per_week: b.pricePerWeek,
+          price_per_month: b.pricePerMonth,
+          deposit: b.deposit,
+          description: b.description,
+          description_vi: b.descriptionVi,
+          image_url: b.imageUrl,
+          images: b.images,
+          available: b.available,
+          is_for_sale: b.isForSale,
+          sale_price: b.salePrice,
+        };
+        const { data, error } = await supabase.from("bikes").insert(row).select().single();
+        if (!error && data) setBikes((prev) => [mapBike(data as Record<string, unknown>), ...prev]);
+      },
+
+      updateBike: async (id, b) => {
+        const row: Record<string, unknown> = {};
+        if (b.name !== undefined) row.name = b.name;
+        if (b.brand !== undefined) row.brand = b.brand;
+        if (b.category !== undefined) row.category = b.category;
+        if (b.engineCc !== undefined) row.engine_cc = b.engineCc;
+        if (b.transmission !== undefined) row.transmission = b.transmission;
+        if (b.pricePerDay !== undefined) row.price_per_day = b.pricePerDay;
+        if (b.pricePerWeek !== undefined) row.price_per_week = b.pricePerWeek;
+        if (b.pricePerMonth !== undefined) row.price_per_month = b.pricePerMonth;
+        if (b.deposit !== undefined) row.deposit = b.deposit;
+        if (b.description !== undefined) row.description = b.description;
+        if (b.descriptionVi !== undefined) row.description_vi = b.descriptionVi;
+        if (b.imageUrl !== undefined) row.image_url = b.imageUrl;
+        if (b.images !== undefined) row.images = b.images;
+        if (b.available !== undefined) row.available = b.available;
+        if (b.isForSale !== undefined) row.is_for_sale = b.isForSale;
+        if (b.salePrice !== undefined) row.sale_price = b.salePrice;
+        const { error } = await supabase.from("bikes").update(row).eq("id", id);
+        if (!error) setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, ...b } : x)));
+      },
+
+      removeBike: async (id) => {
+        const { error } = await supabase.from("bikes").delete().eq("id", id);
+        if (!error) setBikes((prev) => prev.filter((x) => x.id !== id));
+      },
+
+      toggleAvailable: async (id) => {
+        const bike = bikes.find((x) => x.id === id);
+        if (!bike) return;
+        const next = !bike.available;
+        const { error } = await supabase.from("bikes").update({ available: next }).eq("id", id);
+        if (!error)
+          setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, available: next } : x)));
+      },
+
+      setSettings: async (s) => {
+        const { error } = await supabase
+          .from("settings")
+          .update({ whatsapp: s.whatsapp, zalo: s.zalo, messenger: s.messenger, owner_name: s.ownerName })
+          .eq("id", 1);
+        if (!error) setSettingsState(s);
+      },
+
+      addReview: async (r) => {
+        const { data, error } = await supabase
+          .from("reviews")
+          .insert({ bike_id: r.bikeId, rating: r.rating, comment: r.comment, author_name: r.authorName })
+          .select()
+          .single();
+        if (!error && data) setReviews((prev) => [mapReview(data as Record<string, unknown>), ...prev]);
+      },
+
+      addBooking: async (b) => {
+        const { data, error } = await supabase
+          .from("bookings")
+          .insert({
+            bike_id: b.bikeId,
+            customer_name: b.customerName,
+            phone: b.phone,
+            from_date: b.fromDate,
+            to_date: b.toDate,
+            total: b.total,
+            status: b.status,
+          })
+          .select()
+          .single();
+        if (!error && data)
+          setBookings((prev) => [mapBooking(data as Record<string, unknown>), ...prev]);
+      },
+
+      updateBookingStatus: async (id, status) => {
+        const { error } = await supabase.from("bookings").update({ status }).eq("id", id);
+        if (!error)
+          setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)));
+      },
+
+      updatePricingTier: async (rate, prices) => {
+        await supabase
+          .from("pricing_tiers")
+          .upsert({ rate, prices }, { onConflict: "rate" });
+        setPricingTiers((prev) => ({ ...prev, [rate]: prices }));
+      },
+
+      removePricingTier: async (rate) => {
+        await supabase.from("pricing_tiers").delete().eq("rate", rate);
         setPricingTiers((prev) => {
           const next = { ...prev };
           delete next[rate];
           return next;
-        }),
+        });
+      },
     }),
-    [bikes, settings, reviews, bookings, pricingTiers],
+    [bikes, settings, reviews, bookings, pricingTiers, loading],
   );
 
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
