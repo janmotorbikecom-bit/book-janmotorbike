@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — MotoRent" },
+      { title: "Admin — JAN'S MOTORBIKE" },
       { name: "description", content: "Manage inventory and settings." },
       { name: "robots", content: "noindex" },
     ],

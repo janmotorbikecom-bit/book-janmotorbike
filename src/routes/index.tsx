@@ -25,12 +25,12 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "MotoRent — Rent a Motorbike by the Day, Week or Month" },
+      { title: "JAN'S MOTORBIKE — GET US GET BETTER!" },
       {
         name: "description",
         content: "Browse available motorbikes. Pick your dates and book instantly via WhatsApp.",
       },
-      { property: "og:title", content: "MotoRent — Motorbike Rentals" },
+      { property: "og:title", content: "JAN'S MOTORBIKE — GET US GET BETTER!" },
       {
         property: "og:description",
         content: "Flexible daily, weekly and monthly motorbike rentals. Book in one tap.",
@@ -236,7 +236,7 @@ function Storefront() {
       <BikeDetailDialog bike={selected} open={open} onOpenChange={setOpen} />
 
       <footer className="border-t border-border py-12 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground bg-muted/10">
-        © {new Date().getFullYear()} MotoRent
+        © 2019 JAN'S MOTORBIKE
       </footer>
     </div>
   );

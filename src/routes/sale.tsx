@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/sale")({
   head: () => ({
     meta: [
-      { title: "Bikes for Sale — MotoRent" },
+      { title: "Bikes for Sale — JAN'S MOTORBIKE" },
       { name: "description", content: "Motorbikes available for purchase." },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -67,7 +67,7 @@ function SalePage() {
       </section>
 
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} MotoRent
+        © 2019 JAN'S MOTORBIKE
       </footer>
     </div>
   );
