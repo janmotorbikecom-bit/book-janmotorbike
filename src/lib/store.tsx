@@ -108,7 +108,7 @@ function mapBooking(row: Record<string, unknown>): Booking {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [bikes, setBikes] = useState<Bike[]>(seedBikes);
+  const [bikes, setBikes] = useState<Bike[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [settings, setSettingsState] = useState<Settings>({
