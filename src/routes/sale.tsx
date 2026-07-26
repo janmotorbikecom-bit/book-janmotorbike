@@ -94,41 +94,46 @@ function SaleCard({
   const href = `https://wa.me/${whatsapp}?text=${encodeURIComponent(msg)}`;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-lg">
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+    <article className="group flex flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30">
+      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/10 text-left">
         <img
           src={bike.imageUrl}
           alt={bike.name}
           loading="lazy"
-          className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <Badge className="absolute left-3 top-3 border-0 bg-accent text-accent-foreground shadow">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <Badge className="absolute left-4 top-4 border border-white/20 bg-white/90 text-black backdrop-blur-md shadow-sm font-bold uppercase tracking-wider text-[10px]">
           {bike.category}
         </Badge>
       </div>
-      <div className="flex flex-1 flex-col gap-4 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="font-display text-lg font-semibold leading-tight">{bike.name}</h3>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-            <Gauge className="size-3.5" />
-            {bike.engineCc}cc
-          </span>
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex-1">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h3 className="font-display text-xl font-black uppercase tracking-widest leading-tight text-foreground transition-colors group-hover:text-primary">
+              {bike.name}
+            </h3>
+            <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[10px] text-muted-foreground shrink-0 bg-muted/80 px-2 py-1 rounded-md shadow-inner">
+              <Gauge className="size-3" />
+              {bike.engineCc}cc
+            </span>
+          </div>
+          <p className="line-clamp-2 text-sm text-muted-foreground font-medium leading-relaxed">{bike.description}</p>
         </div>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{bike.description}</p>
 
-        <div className="border-t border-border pt-4">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="mt-5 border-t border-border/50 pt-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
             {lang === "vi" ? "Giá bán" : "Sale Price"}
           </div>
-          <div className="font-display text-3xl font-bold text-accent">{formatVnd(price)}</div>
+          <div className="font-display text-3xl font-black text-accent">{formatVnd(price)}</div>
         </div>
 
         <Button
           asChild
-          className="w-full bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90"
+          className="w-full bg-[#25D366] text-white hover:bg-[#20bd5a] hover:shadow-lg hover:shadow-[#25D366]/20 font-bold uppercase tracking-widest text-xs h-11 mt-4 rounded-xl transition-all"
         >
           <a href={href} target="_blank" rel="noreferrer">
-            <MessageCircle className="size-4" />
+            <MessageCircle className="size-4 mr-2" />
             {lang === "vi" ? "Mua qua WhatsApp" : "Buy via WhatsApp"}
           </a>
         </Button>
