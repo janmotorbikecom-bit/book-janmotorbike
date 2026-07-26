@@ -11,14 +11,14 @@ const DICT: Dict = {
   admin: { en: "Admin", vi: "Quản trị" },
   // Storefront
   hero_kicker: {
-    en: "Daily · Weekly · Monthly · Instant booking",
-    vi: "Ngày · Tuần · Tháng · Đặt ngay",
+    en: "Premium Motorbike & Scooter Rental",
+    vi: "Dịch Vụ Cho Thuê Xe Máy Uy Tín",
   },
-  hero_title_1: { en: "Find your ride.", vi: "Chọn xe của bạn." },
-  hero_title_2: { en: "Book in seconds.", vi: "Đặt trong vài giây." },
+  hero_title_1: { en: "JAN'S MOTORBIKE", vi: "JAN'S MOTORBIKE" },
+  hero_title_2: { en: "— GET US GET BETTER!", vi: "— GET US GET BETTER!" },
   hero_sub: {
-    en: "Pick a bike, choose your dates, message us on WhatsApp — done.",
-    vi: "Chọn xe, chọn ngày, nhắn WhatsApp — xong.",
+    en: "Flexible daily, weekly & monthly motorbike rentals. High-quality bikes, best prices, and instant booking via WhatsApp or Zalo.",
+    vi: "Cho thuê xe tay ga, xe số dài hạn giá tốt nhất. Xe chất lượng cao, bảo dưỡng định kỳ. Đặt xe nhanh chóng qua WhatsApp hoặc Zalo.",
   },
   search_placeholder: { en: "Search bikes…", vi: "Tìm xe…" },
   cat_all: { en: "All categories", vi: "Tất cả loại" },
