@@ -110,52 +110,77 @@ function mapBooking(row: Record<string, unknown>): Booking {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [bikes, setBikes] = useState<Bike[]>([]);
+  const [bikes, setBikes] = useState<Bike[]>(() => {
+    try {
+      const cached = localStorage.getItem("jan_bikes_cache");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [reviews, setReviews] = useState<Review[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [settings, setSettingsState] = useState<Settings>({
-    whatsapp: "84900000000",
-    zalo: "84900000000",
-    messenger: "motorent",
-    ownerName: "Jan",
+  const [settings, setSettingsState] = useState<Settings>(() => {
+    try {
+      const cached = localStorage.getItem("jan_settings_cache");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return {
+      whatsapp: "84900000000",
+      zalo: "84900000000",
+      messenger: "motorent",
+      ownerName: "Jan",
+    };
   });
-  const [pricingTiers, setPricingTiers] =
-    useState<Record<number, number[]>>(DEFAULT_PRICING_TIERS);
-  const [loading, setLoading] = useState(true);
+  const [pricingTiers, setPricingTiers] = useState<Record<number, number[]>>(() => {
+    try {
+      const cached = localStorage.getItem("jan_tiers_cache");
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return DEFAULT_PRICING_TIERS;
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem("jan_bikes_cache");
+    } catch {
+      return true;
+    }
+  });
 
   // ── Load all data from Supabase on mount ──────────────────────
   useEffect(() => {
+    let mounted = true;
     async function loadAll() {
-      setLoading(true);
+      // Only show loading indicator if we don't have cached data
+      setLoading((prev) => (bikes.length === 0 ? true : prev));
       try {
         const [
           { data: bikesData },
-          { data: reviewsData },
-          { data: bookingsData },
           { data: settingsData },
           { data: tiersData },
         ] = await Promise.all([
           supabase.from("bikes").select("*").order("created_at", { ascending: false }),
-          supabase.from("reviews").select("*").order("created_at", { ascending: false }),
-          supabase.from("bookings").select("*").order("created_at", { ascending: false }),
           supabase.from("settings").select("*").eq("id", 1).single(),
           supabase.from("pricing_tiers").select("*").order("rate"),
         ]);
 
-        if (bikesData && bikesData.length > 0)
-          setBikes(bikesData.map((r) => mapBike(r as Record<string, unknown>)));
-        if (reviewsData)
-          setReviews(reviewsData.map((r) => mapReview(r as Record<string, unknown>)));
-        if (bookingsData)
-          setBookings(bookingsData.map((r) => mapBooking(r as Record<string, unknown>)));
+        if (!mounted) return;
+
+        if (bikesData && bikesData.length > 0) {
+          const b = bikesData.map((r) => mapBike(r as Record<string, unknown>));
+          setBikes(b);
+          localStorage.setItem("jan_bikes_cache", JSON.stringify(b));
+        }
         if (settingsData) {
           const s = settingsData as Record<string, unknown>;
-          setSettingsState({
+          const st = {
             whatsapp: s.whatsapp as string,
             zalo: s.zalo as string,
             messenger: s.messenger as string,
             ownerName: s.owner_name as string,
-          });
+          };
+          setSettingsState(st);
+          localStorage.setItem("jan_settings_cache", JSON.stringify(st));
         }
         if (tiersData && tiersData.length > 0) {
           const merged: Record<number, number[]> = { ...DEFAULT_PRICING_TIERS };
@@ -163,14 +188,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             merged[t.rate] = t.prices;
           });
           setPricingTiers(merged);
+          localStorage.setItem("jan_tiers_cache", JSON.stringify(merged));
         }
       } catch (e) {
-        console.error("Failed to load from Supabase, using defaults.", e);
+        console.error("Failed to load critical data from Supabase.", e);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
+      }
+
+      // Fetch non-blocking data asynchronously
+      try {
+        Promise.all([
+          supabase.from("reviews").select("*").order("created_at", { ascending: false }),
+          supabase.from("bookings").select("*").order("created_at", { ascending: false }),
+        ]).then(([ { data: reviewsData }, { data: bookingsData } ]) => {
+          if (!mounted) return;
+          if (reviewsData)
+            setReviews(reviewsData.map((r) => mapReview(r as Record<string, unknown>)));
+          if (bookingsData)
+            setBookings(bookingsData.map((r) => mapBooking(r as Record<string, unknown>)));
+        });
+      } catch (e) {
+        console.error("Failed to load async data from Supabase.", e);
       }
     }
     loadAll();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // ── Actions ───────────────────────────────────────────────────

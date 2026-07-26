@@ -145,13 +145,97 @@ export function BikeDetailDialog({
     toast.success(lang === "vi" ? "Cảm ơn bạn đã đánh giá!" : "Thanks for your review!");
   };
 
+  const renderReviews = () => (
+    <div className="mt-8 border-t border-border pt-5 pb-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold">{lang === "vi" ? "Đánh giá" : "Reviews"}</h3>
+        {bikeReviews.length > 0 && (
+          <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+            <Star className="size-3 fill-amber-500" /> {avgRating.toFixed(1)} (
+            {bikeReviews.length})
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4 mb-6">
+        {bikeReviews.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">
+            {lang === "vi" ? "Chưa có đánh giá nào." : "No reviews yet."}
+          </p>
+        ) : (
+          bikeReviews.map((r) => (
+            <div
+              key={r.id}
+              className="text-sm bg-muted/20 p-3 rounded-lg border border-border/50"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs">{r.authorName}</span>
+                <div className="flex gap-0.5 text-amber-500">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        "size-3",
+                        i < r.rating ? "fill-amber-500" : "text-muted opacity-30",
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className="text-muted-foreground mt-1.5 text-[13px]">{r.comment}</p>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Add review form */}
+      <div className="rounded-xl border border-border p-3.5 bg-muted/30">
+        <h4 className="text-xs font-bold mb-2.5">
+          {lang === "vi" ? "Viết đánh giá" : "Write a review"}
+        </h4>
+        <div className="flex items-center gap-1 mb-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setReviewRating(i + 1)}
+              className={cn(
+                "text-amber-500 transition-transform hover:scale-110",
+                i < reviewRating ? "fill-amber-500" : "opacity-30",
+              )}
+            >
+              <Star className="size-5" />
+            </button>
+          ))}
+        </div>
+        <Input
+          placeholder={lang === "vi" ? "Tên của bạn" : "Your name"}
+          value={reviewName}
+          onChange={(e) => setReviewName(e.target.value)}
+          className="h-9 text-xs mb-2.5 bg-background"
+        />
+        <Textarea
+          placeholder={
+            lang === "vi" ? "Đánh giá của bạn về chiếc xe..." : "How was the bike?"
+          }
+          value={reviewComment}
+          onChange={(e) => setReviewComment(e.target.value)}
+          className="text-xs min-h-[60px] mb-3 bg-background"
+        />
+        <Button size="sm" className="w-full h-8 text-xs" onClick={submitReview}>
+          {lang === "vi" ? "Gửi Đánh Giá" : "Submit Review"}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[92vh] max-w-4xl flex-col overflow-hidden p-0">
         <DialogTitle className="sr-only">{bike.name}</DialogTitle>
-        <div className="grid flex-1 overflow-hidden gap-0 md:grid-cols-2">
+        <div className="grid flex-1 overflow-y-auto md:overflow-hidden gap-0 md:grid-cols-2">
           {/* Left: bike info */}
-          <div className="h-full overflow-y-auto border-b border-border p-4 md:border-b-0 md:border-r">
+          <div className="md:h-full md:overflow-y-auto border-b border-border p-4 md:border-b-0 md:border-r">
             <div className="overflow-hidden rounded-xl bg-muted">
               <img
                 src={gallery[activeImg] ?? bike.imageUrl}
@@ -237,91 +321,13 @@ export function BikeDetailDialog({
             </div>
 
             {/* Reviews Section */}
-            <div className="mt-8 border-t border-border pt-5 pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold">{lang === "vi" ? "Đánh giá" : "Reviews"}</h3>
-                {bikeReviews.length > 0 && (
-                  <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                    <Star className="size-3 fill-amber-500" /> {avgRating.toFixed(1)} (
-                    {bikeReviews.length})
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-4 mb-6">
-                {bikeReviews.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">
-                    {lang === "vi" ? "Chưa có đánh giá nào." : "No reviews yet."}
-                  </p>
-                ) : (
-                  bikeReviews.map((r) => (
-                    <div
-                      key={r.id}
-                      className="text-sm bg-muted/20 p-3 rounded-lg border border-border/50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs">{r.authorName}</span>
-                        <div className="flex gap-0.5 text-amber-500">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={cn(
-                                "size-3",
-                                i < r.rating ? "fill-amber-500" : "text-muted opacity-30",
-                              )}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground mt-1.5 text-[13px]">{r.comment}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Add review form */}
-              <div className="rounded-xl border border-border p-3.5 bg-muted/30">
-                <h4 className="text-xs font-bold mb-2.5">
-                  {lang === "vi" ? "Viết đánh giá" : "Write a review"}
-                </h4>
-                <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setReviewRating(i + 1)}
-                      className={cn(
-                        "text-amber-500 transition-transform hover:scale-110",
-                        i < reviewRating ? "fill-amber-500" : "opacity-30",
-                      )}
-                    >
-                      <Star className="size-5" />
-                    </button>
-                  ))}
-                </div>
-                <Input
-                  placeholder={lang === "vi" ? "Tên của bạn" : "Your name"}
-                  value={reviewName}
-                  onChange={(e) => setReviewName(e.target.value)}
-                  className="h-9 text-xs mb-2.5 bg-background"
-                />
-                <Textarea
-                  placeholder={
-                    lang === "vi" ? "Đánh giá của bạn về chiếc xe..." : "How was the bike?"
-                  }
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  className="text-xs min-h-[60px] mb-3 bg-background"
-                />
-                <Button size="sm" className="w-full h-8 text-xs" onClick={submitReview}>
-                  {lang === "vi" ? "Gửi Đánh Giá" : "Submit Review"}
-                </Button>
-              </div>
+            <div className="hidden md:block">
+              {renderReviews()}
             </div>
           </div>
 
           {/* Right: booking */}
-          <div className="h-full scrollbar-none overflow-y-auto p-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="md:h-full md:overflow-y-auto p-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* 1. Pricing */}
             <div className="grid grid-cols-3 gap-2">
               <div className="flex flex-col items-center rounded-lg border border-border bg-card p-2 shadow-sm">
@@ -548,6 +554,10 @@ export function BikeDetailDialog({
                 name: settings.ownerName || (lang === "vi" ? "chúng tôi" : "us"),
               })}
             </p>
+
+            <div className="block md:hidden">
+              {renderReviews()}
+            </div>
           </div>
         </div>
       </DialogContent>

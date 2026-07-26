@@ -1,5 +1,5 @@
-export type BikeCategory = "Manual" | "Automatic" | "Semi-Automatic";
-export type Transmission = "Manual" | "Automatic" | "Semi-Automatic";
+export type BikeCategory = "Manual" | "Automatic" | "Semi-Automatic" | "Electric";
+export type Transmission = "Manual" | "Automatic" | "Semi-Automatic" | "Electric";
 
 export type Bike = {
   id: string;

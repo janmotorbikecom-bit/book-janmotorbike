@@ -46,9 +46,16 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
       <div className="flex flex-1 flex-col p-5">
         <button type="button" onClick={() => onOpen(bike)} className="text-left flex-1">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h3 className="font-display text-xl font-black uppercase tracking-widest leading-tight text-foreground transition-colors group-hover:text-primary">
-              {bike.name}
-            </h3>
+            <div className="flex flex-col gap-0.5 text-left">
+              {bike.brand && bike.brand !== "Other" && (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary/80">
+                  {bike.brand}
+                </span>
+              )}
+              <h3 className="font-display text-xl font-black uppercase tracking-widest leading-tight text-foreground transition-colors group-hover:text-primary">
+                {bike.name}
+              </h3>
+            </div>
             <span className="inline-flex items-center gap-1 font-bold uppercase tracking-wider text-[10px] text-muted-foreground shrink-0 bg-muted/80 px-2 py-1 rounded-md shadow-inner">
               <Gauge className="size-3" />
               {bike.engineCc}cc

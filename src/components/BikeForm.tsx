@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, useMemo, type FormEvent, type KeyboardEvent } from "react";
 import { Upload, Loader2, X, Sparkles, Link as LinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +41,17 @@ export function BikeForm({
   };
   const parseNum = (val: string) => Number(val.replace(/\D/g, ""));
 
+  const { bikes } = useStore();
   const [name, setName] = useState(initial?.name ?? "");
-  const [brand, setBrand] = useState(initial?.brand ?? "Other");
+  const [brand, setBrand] = useState(initial?.brand ?? "Honda");
+  const [isCustomBrand, setIsCustomBrand] = useState(false);
+
+  const uniqueBrands = useMemo(() => {
+    const b = bikes.map((x) => x.brand).filter((x): x is string => !!x && x !== "Other");
+    const base = ["Honda", "Yamaha", "Vespa", "SYM", "Suzuki"];
+    if (initial?.brand && initial.brand !== "Other") base.push(initial.brand);
+    return Array.from(new Set([...base, ...b])).sort();
+  }, [bikes, initial?.brand]);
   const [category, setCategory] = useState<BikeCategory>(initial?.category ?? "Automatic");
   const [transmission, setTransmission] = useState<Transmission>(
     initial?.transmission ?? "Automatic",
@@ -198,6 +207,11 @@ export function BikeForm({
       selectedTemplate = templatesAuto[Math.floor(Math.random() * templatesAuto.length)];
     } else if (category === "Manual") {
       selectedTemplate = templatesManual[Math.floor(Math.random() * templatesManual.length)];
+    } else if (category === "Electric") {
+      selectedTemplate = {
+        vi: `Cho thuê xe điện ${name} - tiết kiệm, bảo vệ môi trường. Di chuyển mượt mà, không tiếng ồn. Lựa chọn hoàn hảo cho việc đi lại trong thành phố.`,
+        en: `Electric bike for rent: The ${name}. Eco-friendly, silent, and smooth riding. Perfect for city commuting.`,
+      };
     } else {
       selectedTemplate = templatesSemi[Math.floor(Math.random() * templatesSemi.length)];
     }
@@ -390,20 +404,53 @@ export function BikeForm({
           <Input id="name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
         </div>
         <div>
-          <Label>{lang === "vi" ? "Hãng xe" : "Brand"}</Label>
-          <Select value={brand} onValueChange={(v) => setBrand(v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Honda">Honda</SelectItem>
-              <SelectItem value="Yamaha">Yamaha</SelectItem>
-              <SelectItem value="Vespa">Vespa</SelectItem>
-              <SelectItem value="SYM">SYM</SelectItem>
-              <SelectItem value="Suzuki">Suzuki</SelectItem>
-              <SelectItem value="Other">{lang === "vi" ? "Khác" : "Other"}</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label>{t("form_brand")}</Label>
+          {!isCustomBrand ? (
+            <Select
+              value={uniqueBrands.includes(brand) ? brand : (uniqueBrands[0] || "Honda")}
+              onValueChange={(v) => {
+                if (v === "NEW_BRAND") {
+                  setIsCustomBrand(true);
+                  setBrand("");
+                } else {
+                  setBrand(v);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Brand" />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueBrands.map((b) => (
+                  <SelectItem key={b} value={b}>
+                    {b}
+                  </SelectItem>
+                ))}
+                <SelectItem value="NEW_BRAND" className="text-accent font-bold">
+                  + {lang === "vi" ? "Thêm hãng khác" : "Add new brand"}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex gap-2 mt-1">
+              <Input
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder={lang === "vi" ? "Nhập tên hãng..." : "Enter brand name..."}
+                autoFocus
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsCustomBrand(false);
+                  setBrand(uniqueBrands[0] || "Honda");
+                }}
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+          )}
         </div>
         <div>
           <Label>{t("form_cat")}</Label>
@@ -415,6 +462,7 @@ export function BikeForm({
               <SelectItem value="Manual">Manual</SelectItem>
               <SelectItem value="Automatic">Automatic</SelectItem>
               <SelectItem value="Semi-Automatic">Semi-Automatic</SelectItem>
+              <SelectItem value="Electric">Electric</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -428,6 +476,7 @@ export function BikeForm({
               <SelectItem value="Manual">Manual</SelectItem>
               <SelectItem value="Automatic">Automatic</SelectItem>
               <SelectItem value="Semi-Automatic">Semi-Automatic</SelectItem>
+              <SelectItem value="Electric">Electric</SelectItem>
             </SelectContent>
           </Select>
         </div>

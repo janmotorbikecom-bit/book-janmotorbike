@@ -55,10 +55,21 @@ function Storefront() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<CategoryFilter>("All");
   const [brand, setBrand] = useState<BrandFilter>("All");
+  const [cc, setCc] = useState<"All" | number>("All");
   const [priceMax, setPriceMax] = useState<number[]>([1000000]);
   const [sort, setSort] = useState<SortOpt>("featured");
   const [selected, setSelected] = useState<Bike | null>(null);
   const [open, setOpen] = useState(false);
+
+  const uniqueCcs = useMemo(() => {
+    const ccs = bikes.map((b) => b.engineCc).filter((c) => c != null);
+    return Array.from(new Set(ccs)).sort((a, b) => a - b);
+  }, [bikes]);
+
+  const uniqueBrands = useMemo(() => {
+    const b = bikes.map((x) => x.brand).filter((x): x is string => !!x && x !== "Other");
+    return Array.from(new Set(b)).sort();
+  }, [bikes]);
 
   // Parse ?bikeId and open dialog automatically
   useEffect(() => {
@@ -80,6 +91,7 @@ function Storefront() {
     let out = bikes.filter((b) => b.available);
     if (cat !== "All") out = out.filter((b) => b.category === cat);
     if (brand !== "All") out = out.filter((b) => b.brand === brand);
+    if (cc !== "All") out = out.filter((b) => b.engineCc === cc);
     if (q.trim()) {
       const s = q.toLowerCase();
       out = out.filter((b) => b.name.toLowerCase().includes(s));
@@ -90,7 +102,7 @@ function Storefront() {
     if (sort === "price-asc") out = [...out].sort((a, b) => a.pricePerDay - b.pricePerDay);
     if (sort === "price-desc") out = [...out].sort((a, b) => b.pricePerDay - a.pricePerDay);
     return out;
-  }, [bikes, cat, brand, sort, q, priceMax]);
+  }, [bikes, cat, brand, cc, sort, q, priceMax]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,24 +147,29 @@ function Storefront() {
                 <SelectItem value="All" className="font-bold uppercase tracking-wider text-xs">
                   {lang === "vi" ? "Tất cả hãng" : "All Brands"}
                 </SelectItem>
-                <SelectItem value="Honda" className="font-bold uppercase tracking-wider text-xs">
-                  Honda
-                </SelectItem>
-                <SelectItem value="Yamaha" className="font-bold uppercase tracking-wider text-xs">
-                  Yamaha
-                </SelectItem>
-                <SelectItem value="Vespa" className="font-bold uppercase tracking-wider text-xs">
-                  Vespa
-                </SelectItem>
-                <SelectItem value="SYM" className="font-bold uppercase tracking-wider text-xs">
-                  SYM
-                </SelectItem>
-                <SelectItem value="Suzuki" className="font-bold uppercase tracking-wider text-xs">
-                  Suzuki
-                </SelectItem>
+                {uniqueBrands.map((b) => (
+                  <SelectItem key={b} value={b} className="font-bold uppercase tracking-wider text-xs">
+                    {b}
+                  </SelectItem>
+                ))}
                 <SelectItem value="Other" className="font-bold uppercase tracking-wider text-xs">
                   {lang === "vi" ? "Khác" : "Other"}
                 </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={cc === "All" ? "All" : cc.toString()} onValueChange={(v) => setCc(v === "All" ? "All" : Number(v))}>
+              <SelectTrigger className="sm:w-32 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
+                <SelectValue placeholder="CC" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All" className="font-bold uppercase tracking-wider text-xs">
+                  {lang === "vi" ? "Tất cả CC" : "All CC"}
+                </SelectItem>
+                {uniqueCcs.map((c) => (
+                  <SelectItem key={c} value={c.toString()} className="font-bold uppercase tracking-wider text-xs">
+                    {c}cc
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={cat} onValueChange={(v) => setCat(v as CategoryFilter)}>
@@ -177,6 +194,12 @@ function Storefront() {
                   className="font-bold uppercase tracking-wider text-xs"
                 >
                   {t("cat_semi")}
+                </SelectItem>
+                <SelectItem
+                  value="Electric"
+                  className="font-bold uppercase tracking-wider text-xs"
+                >
+                  {t("cat_electric")}
                 </SelectItem>
               </SelectContent>
             </Select>

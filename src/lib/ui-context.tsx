@@ -25,6 +25,7 @@ const DICT: Dict = {
   cat_auto: { en: "Automatic", vi: "Xe tay ga" },
   cat_manual: { en: "Manual", vi: "Xe số" },
   cat_semi: { en: "Semi-Automatic", vi: "Bán tự động" },
+  cat_electric: { en: "Electric", vi: "Xe điện" },
   sort_featured: { en: "Featured", vi: "Nổi bật" },
   sort_asc: { en: "Price: low to high", vi: "Giá: thấp đến cao" },
   sort_desc: { en: "Price: high to low", vi: "Giá: cao đến thấp" },
