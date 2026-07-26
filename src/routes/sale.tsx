@@ -95,7 +95,7 @@ function SaleCard({
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-lg">
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
         <img
           src={bike.imageUrl}
           alt={bike.name}

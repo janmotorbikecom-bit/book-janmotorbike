@@ -12,7 +12,7 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
       <button
         type="button"
         onClick={() => onOpen(bike)}
-        className="relative aspect-[4/3] overflow-hidden bg-white text-left"
+        className="relative aspect-[3/4] overflow-hidden bg-white text-left"
       >
         <img
           src={bike.imageUrl}

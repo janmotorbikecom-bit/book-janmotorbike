@@ -156,7 +156,7 @@ export function BikeDetailDialog({
               <img
                 src={gallery[activeImg] ?? bike.imageUrl}
                 alt={bike.name}
-                className="aspect-[1.35/1] w-full object-cover transition"
+                className="aspect-[3/4] w-full object-cover transition"
               />
             </div>
             {gallery.length > 1 && (
@@ -178,7 +178,7 @@ export function BikeDetailDialog({
                       src={src}
                       alt={`${bike.name} ${i + 1}`}
                       loading="lazy"
-                      className="aspect-[1.35/1] w-full object-cover"
+                      className="aspect-[3/4] w-full object-cover"
                     />
                   </button>
                 ))}

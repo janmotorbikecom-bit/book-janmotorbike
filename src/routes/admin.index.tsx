@@ -117,7 +117,7 @@ function Inventory() {
                   key={b.id}
                   className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md"
                 >
-                  <div className="relative aspect-[4/3] bg-muted">
+                  <div className="relative aspect-[3/4] bg-muted">
                     <img
                       src={b.imageUrl}
                       alt={b.name}

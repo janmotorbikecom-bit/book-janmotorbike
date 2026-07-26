@@ -64,22 +64,9 @@ export function BikeForm({
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [cropQueue, setCropQueue] = useState<File[]>([]);
-  const [currentCropUrl, setCurrentCropUrl] = useState<string>("");
-
-  useEffect(() => {
-    if (cropQueue.length > 0) {
-      const url = URL.createObjectURL(cropQueue[0]);
-      setCurrentCropUrl(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setCurrentCropUrl("");
-    }
-  }, [cropQueue]);
-
   function handleFilesSelect(files: File[]) {
     if (files.length) {
-      setCropQueue((prev) => [...prev, ...files]);
+      void processFiles(files);
     }
   }
   const formRef = useRef<HTMLFormElement>(null);
@@ -221,10 +208,11 @@ export function BikeForm({
       onDone?.();
     } catch (err) {
       console.error("[BikeForm] save error:", err);
+      const errMsg = err instanceof Error ? err.message : String(err);
       toast.error(
         lang === "vi"
-          ? "Lưu thất bại! Vui lòng kiểm tra kết nối hoặc thử lại."
-          : "Save failed! Please check your connection and try again.",
+          ? `Lưu thất bại: ${errMsg}`
+          : `Save failed: ${errMsg}`,
       );
     } finally {
       setSaving(false);
@@ -316,7 +304,7 @@ export function BikeForm({
             {images.map((src, i) => (
               <div
                 key={i}
-                className="group relative aspect-square overflow-hidden rounded-md border border-border bg-muted"
+                className="group relative aspect-[3/4] overflow-hidden rounded-md border border-border bg-muted"
               >
                 <img src={src} alt="" className="size-full object-cover" />
                 <button
@@ -521,19 +509,6 @@ export function BikeForm({
         </Button>
       </div>
 
-      {currentCropUrl && (
-        <ImageCropperDialog
-          imageSrc={currentCropUrl}
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setCropQueue((prev) => prev.slice(1));
-          }}
-          onCropComplete={async (croppedFile) => {
-            setCropQueue((prev) => prev.slice(1));
-            await processFiles([croppedFile]);
-          }}
-        />
-      )}
     </form>
   );
 }
