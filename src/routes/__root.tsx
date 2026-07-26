@@ -78,17 +78,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MotoRent — Monthly Motorbike Rental" },
+      { title: "Jan's Motorbike — Premium Motorbike Rental" },
       {
         name: "description",
-        content: "Rent motorbikes by the month. Book instantly via WhatsApp or Zalo.",
+        content: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo. Best prices guaranteed.",
       },
-      { property: "og:title", content: "MotoRent — Monthly Motorbike Rental" },
+      { property: "og:title", content: "Jan's Motorbike — Premium Rentals" },
       {
         property: "og:description",
-        content: "Fast, flexible monthly motorbike rentals. Book in one tap.",
+        content: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://book.janmotorbike.com/logo-jan-motorbike-2026.png" },
+      { property: "og:url", content: "https://book.janmotorbike.com/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
