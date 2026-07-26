@@ -19,6 +19,8 @@ export type Bike = {
   available: boolean;
   isForSale?: boolean;
   salePrice?: number;
+  busyFrom?: string;
+  busyTo?: string;
 };
 
 const UNSPLASH = (id: string, w = 1000) =>

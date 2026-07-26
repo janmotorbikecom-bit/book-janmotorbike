@@ -79,6 +79,8 @@ function mapBike(row: Record<string, unknown>): Bike {
     available: row.available as boolean,
     isForSale: row.is_for_sale as boolean | undefined,
     salePrice: row.sale_price as number | undefined,
+    busyFrom: row.busy_from as string | undefined,
+    busyTo: row.busy_to as string | undefined,
   };
 }
 
@@ -199,6 +201,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           available: b.available,
           is_for_sale: b.isForSale,
           sale_price: b.salePrice,
+          busy_from: b.busyFrom || null,
+          busy_to: b.busyTo || null,
         };
         const { data, error } = await supabase.from("bikes").insert(row).select().single();
         if (error) throw new Error(error.message);
@@ -223,6 +227,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (b.available !== undefined) row.available = b.available;
         if (b.isForSale !== undefined) row.is_for_sale = b.isForSale;
         if (b.salePrice !== undefined) row.sale_price = b.salePrice;
+        if (b.busyFrom !== undefined) row.busy_from = b.busyFrom || null;
+        if (b.busyTo !== undefined) row.busy_to = b.busyTo || null;
         const { error } = await supabase.from("bikes").update(row).eq("id", id);
         if (error) throw new Error(error.message);
         setBikes((prev) => prev.map((x) => (x.id === id ? { ...x, ...b } : x)));

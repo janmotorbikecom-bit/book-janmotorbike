@@ -54,6 +54,9 @@ export function BikeForm({
   const [descriptionVi, setDescriptionVi] = useState(initial?.descriptionVi ?? "");
   const [isForSale, setIsForSale] = useState<boolean>(initial?.isForSale ?? false);
   const [salePrice, setSalePrice] = useState(formatNum(initial?.salePrice ?? 25000000));
+  const [busyFrom, setBusyFrom] = useState(initial?.busyFrom ?? "");
+  const [busyTo, setBusyTo] = useState(initial?.busyTo ?? "");
+  
   // For clone: keep the source images so admin can save immediately or replace.
   const initialImages =
     mode === "clone" && initial?.images ? initial.images : (initial?.images ?? []);
@@ -153,16 +156,54 @@ export function BikeForm({
     let descEn = "";
     let descVi = "";
 
+    const templatesAuto = [
+      {
+        vi: `Dịch vụ cho thuê xe máy chất lượng cao với dòng xe ${name}. Mẫu xe tay ga ${engineCc}cc cho thuê này nổi bật với khả năng vận hành êm ái, siêu tiết kiệm nhiên liệu và cốp chứa đồ rộng rãi. Đây là lựa chọn hoàn hảo khi bạn cần thuê xe tay ga để di chuyển, đi làm hay vi vu khám phá đường phố mỗi ngày!`,
+        en: `Top-quality motorbike for rent: The ${name}. This ${engineCc}cc automatic scooter for rent stands out with its incredibly smooth operation, exceptional fuel efficiency, and spacious under-seat storage. If you are looking to rent a scooter for daily commutes or city exploration, this is the perfect choice for long-term motorbike rental!`,
+      },
+      {
+        vi: `Thuê xe tay ga ${name} ${engineCc}cc tại cửa hàng của chúng tôi để trải nghiệm chuyến đi tuyệt vời. Xe được thiết kế hiện đại, máy êm, tiết kiệm xăng và cực kỳ dễ lái. Phù hợp cho cả việc dạo phố hay những chuyến công tác dài ngày. Đặt thuê xe máy ngay hôm nay!`,
+        en: `Rent the ${engineCc}cc ${name} automatic scooter at our shop for a fantastic riding experience. Modern design, smooth engine, highly fuel-efficient, and incredibly easy to handle. Perfect for city tours or long business trips. Book your motorbike rental today!`,
+      },
+      {
+        vi: `Bạn đang tìm thuê xe máy tay ga? Chiếc ${name} (${engineCc}cc) chính là sự ưu tiên hàng đầu. Vận hành mượt mà, cốp đồ siêu rộng và cực kỳ bền bỉ. Dịch vụ thuê xe của chúng tôi luôn đảm bảo xe ở trạng thái tốt nhất trước khi giao cho bạn.`,
+        en: `Looking to rent an automatic scooter? The ${name} (${engineCc}cc) is a top priority. Smooth performance, massive under-seat storage, and outstanding reliability. Our motorbike rental service always ensures the bike is in pristine condition before handing it over to you.`,
+      }
+    ];
+
+    const templatesManual = [
+      {
+        vi: `Cho thuê xe máy tay côn thể thao - ${name}. Sở hữu khối động cơ ${engineCc}cc mạnh mẽ cùng hộp số côn tay linh hoạt, chiếc xe này mang đến cảm giác lái cực kỳ phấn khích. Dịch vụ thuê xe máy của chúng tôi cam kết xe luôn được bảo dưỡng hoàn hảo, sẵn sàng đồng hành cùng bạn trên mọi cung đường phượt hay di chuyển hàng ngày.`,
+        en: `Manual motorbike for rent: The aggressive and powerful ${name}! Powered by a robust ${engineCc}cc engine, this manual motorcycle delivers a sporty and exhilarating riding experience. Our motorbike rental service ensures this bike is perfectly maintained. The ideal companion for riders looking to rent a motorbike with true power and performance!`,
+      },
+      {
+        vi: `Thuê xe côn tay ${name} ${engineCc}cc để thỏa mãn đam mê tốc độ! Mẫu xe đậm chất thể thao, sang số cực mượt và bứt tốc vô cùng ấn tượng. Là lựa chọn số 1 cho các anh em cần thuê xe đi phượt hoặc đơn giản là muốn thể hiện cá tính mạnh mẽ trên đường phố.`,
+        en: `Rent the ${engineCc}cc ${name} manual bike to satisfy your thirst for speed! A purely sporty model with smooth gear shifting and impressive acceleration. The number one choice for riders needing a rental bike for road trips or simply wanting to show off a bold personality on the streets.`,
+      }
+    ];
+
+    const templatesSemi = [
+      {
+        vi: `Cho thuê xe số bền bỉ và tiết kiệm xăng - ${name}. Mẫu xe số ${engineCc}cc này được thiết kế để chinh phục mọi địa hình với sự linh hoạt đáng kinh ngạc. Nếu bạn đang tìm kiếm một dịch vụ cho thuê xe máy, tiết kiệm nhiên liệu tối đa cho việc đi lại hằng ngày thì đây chính là chiếc xe hoàn hảo để thuê!`,
+        en: `Reliable semi-automatic motorbike for rent: The ${name}. This ${engineCc}cc bike is engineered to conquer all terrains with outstanding agility and durability. Delivering maximum fuel efficiency, it is the best motorbike rental option for daily commuting and city riding. Discover the best bike for rent today!`,
+      },
+      {
+        vi: `Thuê xe số ${name} ${engineCc}cc - lựa chọn kinh tế và cực kỳ thực dụng. Xe hoạt động siêu ổn định, leo dốc khỏe và mức tiêu hao nhiên liệu thấp. Dịch vụ thuê xe của chúng tôi luôn bảo dưỡng định kỳ để đảm bảo bạn có một phương tiện an toàn và đáng tin cậy.`,
+        en: `Rent the ${engineCc}cc ${name} semi-automatic - an economical and highly practical choice. Super stable operation, strong uphill climbing, and low fuel consumption. Our rental service performs regular maintenance to ensure you have a safe and reliable vehicle.`,
+      }
+    ];
+
+    let selectedTemplate;
     if (category === "Automatic") {
-      descVi = `Dịch vụ cho thuê xe máy chất lượng cao với dòng xe ${name}. Mẫu xe tay ga ${engineCc}cc cho thuê này nổi bật với khả năng vận hành êm ái, siêu tiết kiệm nhiên liệu và cốp chứa đồ rộng rãi. Đây là lựa chọn hoàn hảo khi bạn cần thuê xe tay ga để di chuyển, đi làm hay vi vu khám phá đường phố mỗi ngày!`;
-      descEn = `Top-quality motorbike for rent: The ${name}. This ${engineCc}cc automatic scooter for rent stands out with its incredibly smooth operation, exceptional fuel efficiency, and spacious under-seat storage. If you are looking to rent a scooter for daily commutes or city exploration, this is the perfect choice for long-term motorbike rental!`;
+      selectedTemplate = templatesAuto[Math.floor(Math.random() * templatesAuto.length)];
     } else if (category === "Manual") {
-      descVi = `Cho thuê xe máy tay côn thể thao - ${name}. Sở hữu khối động cơ ${engineCc}cc mạnh mẽ cùng hộp số côn tay linh hoạt, chiếc xe này mang đến cảm giác lái cực kỳ phấn khích. Dịch vụ thuê xe máy của chúng tôi cam kết xe luôn được bảo dưỡng hoàn hảo, sẵn sàng đồng hành cùng bạn trên mọi cung đường phượt hay di chuyển hàng ngày.`;
-      descEn = `Manual motorbike for rent: The aggressive and powerful ${name}! Powered by a robust ${engineCc}cc engine, this manual motorcycle delivers a sporty and exhilarating riding experience. Our motorbike rental service ensures this bike is perfectly maintained. The ideal companion for riders looking to rent a motorbike with true power and performance!`;
+      selectedTemplate = templatesManual[Math.floor(Math.random() * templatesManual.length)];
     } else {
-      descVi = `Cho thuê xe số bền bỉ và tiết kiệm xăng - ${name}. Mẫu xe số ${engineCc}cc này được thiết kế để chinh phục mọi địa hình với sự linh hoạt đáng kinh ngạc. Nếu bạn đang tìm kiếm một dịch vụ cho thuê xe máy, tiết kiệm nhiên liệu tối đa cho việc đi lại hằng ngày thì đây chính là chiếc xe hoàn hảo để thuê!`;
-      descEn = `Reliable semi-automatic motorbike for rent: The ${name}. This ${engineCc}cc bike is engineered to conquer all terrains with outstanding agility and durability. Delivering maximum fuel efficiency, it is the best motorbike rental option for daily commuting and city riding. Discover the best bike for rent today!`;
+      selectedTemplate = templatesSemi[Math.floor(Math.random() * templatesSemi.length)];
     }
+
+    descEn = selectedTemplate.en;
+    descVi = selectedTemplate.vi;
 
     setDescription(descEn);
     setDescriptionVi(descVi);
@@ -210,6 +251,8 @@ export function BikeForm({
       available: initial?.available ?? true,
       isForSale,
       salePrice: isForSale ? parseNum(salePrice) : undefined,
+      busyFrom: busyFrom || undefined,
+      busyTo: busyTo || undefined,
     };
     setSaving(true);
     try {
@@ -478,6 +521,29 @@ export function BikeForm({
             </p>
           </div>
         )}
+      </div>
+
+      <div className="rounded-lg border border-border bg-muted/30 p-4">
+        <div className="mb-3">
+          <Label className="text-sm font-semibold">
+            {lang === "vi" ? "Thời gian bận (Short-term rental)" : "Busy Dates (Short-term)"}
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            {lang === "vi"
+              ? "Cập nhật khoảng thời gian xe đang cho thuê ngắn hạn để hiển thị trên web."
+              : "Set the period this bike is currently rented out short-term."}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label>{lang === "vi" ? "Từ ngày" : "Busy From"}</Label>
+            <Input type="date" value={busyFrom} onChange={(e) => setBusyFrom(e.target.value)} />
+          </div>
+          <div>
+            <Label>{lang === "vi" ? "Đến ngày" : "Busy To"}</Label>
+            <Input type="date" value={busyTo} onChange={(e) => setBusyTo(e.target.value)} />
+          </div>
+        </div>
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
