@@ -118,6 +118,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           priceRange: "$$",
           address: {
             "@type": "PostalAddress",
+            addressLocality: "Ho Chi Minh City",
             addressCountry: "VN",
           },
           description: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo.",

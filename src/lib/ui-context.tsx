@@ -17,8 +17,8 @@ const DICT: Dict = {
   hero_title_1: { en: "JAN'S MOTORBIKE", vi: "JAN'S MOTORBIKE" },
   hero_title_2: { en: "— GET US GET BETTER!", vi: "— GET US GET BETTER!" },
   hero_sub: {
-    en: "Flexible daily, weekly & monthly motorbike rentals. High-quality bikes, best prices, and instant booking via WhatsApp or Zalo.",
-    vi: "Cho thuê xe tay ga, xe số dài hạn giá tốt nhất. Xe chất lượng cao, bảo dưỡng định kỳ. Đặt xe nhanh chóng qua WhatsApp hoặc Zalo.",
+    en: "Flexible daily, weekly & monthly motorbike rentals in Ho Chi Minh City (Sai Gon). High-quality bikes, best prices, and instant booking via WhatsApp or Zalo.",
+    vi: "Cho thuê xe tay ga, xe số dài hạn giá tốt nhất tại TP.HCM (Sài Gòn). Xe chất lượng cao, bảo dưỡng định kỳ. Đặt xe nhanh chóng qua WhatsApp hoặc Zalo.",
   },
   search_placeholder: { en: "Search bikes…", vi: "Tìm xe…" },
   cat_all: { en: "All categories", vi: "Tất cả loại" },
