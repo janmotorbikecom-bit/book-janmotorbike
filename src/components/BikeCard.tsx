@@ -47,7 +47,7 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
         <button type="button" onClick={() => onOpen(bike)} className="text-left flex-1">
           <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex flex-col gap-0.5 text-left">
-              {bike.brand && bike.brand !== "Other" && (
+              {bike.brand && bike.brand !== "Other" && bike.brand !== "Khác" && (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-primary/80">
                   {bike.brand}
                 </span>

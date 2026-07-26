@@ -149,7 +149,7 @@ function Storefront() {
                 </SelectItem>
                 {uniqueBrands.map((b) => (
                   <SelectItem key={b} value={b} className="font-bold uppercase tracking-wider text-xs">
-                    {b}
+                    {b === "Khác" ? (lang === "vi" ? "Khác" : "Other") : b}
                   </SelectItem>
                 ))}
                 <SelectItem value="Other" className="font-bold uppercase tracking-wider text-xs">
