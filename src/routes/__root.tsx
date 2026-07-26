@@ -106,6 +106,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap",
       },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "AutoRental",
+          name: "JAN'S MOTORBIKE",
+          image: "https://book.janmotorbike.com/logo-jan-motorbike-2026.png",
+          url: "https://book.janmotorbike.com",
+          priceRange: "$$",
+          address: {
+            "@type": "PostalAddress",
+            addressCountry: "VN",
+          },
+          description: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo.",
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
