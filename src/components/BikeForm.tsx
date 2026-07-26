@@ -29,7 +29,7 @@ export function BikeForm({
   mode?: "add" | "edit" | "clone";
   onDone?: () => void;
 }) {
-  const { addBike, updateBike } = useStore();
+  const { addBike, updateBike, pricingTiers } = useStore();
   const { lang, t } = useUI();
   const isEdit = mode === "edit" && initial?.id;
 
@@ -48,8 +48,6 @@ export function BikeForm({
     initial?.transmission ?? "Automatic",
   );
   const [engineCc, setEngineCc] = useState(String(initial?.engineCc ?? 110));
-  const [pricePerDay, setPricePerDay] = useState(formatNum(initial?.pricePerDay ?? 150000));
-  const [pricePerWeek, setPricePerWeek] = useState(formatNum(initial?.pricePerWeek ?? 750000));
   const [pricePerMonth, setPricePerMonth] = useState(formatNum(initial?.pricePerMonth ?? 1500000));
   const [deposit, setDeposit] = useState(formatNum(initial?.deposit ?? 2000000));
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -178,15 +176,32 @@ export function BikeForm({
       toast.error(t("toast_req"));
       return;
     }
+    const pm = parseNum(pricePerMonth);
+    let pd = 150000;
+    let pw = 750000;
+    
+    const schedule = pricingTiers[pm];
+    if (schedule) {
+      pd = schedule[1] || 150000;
+      pw = schedule[7] || 750000;
+    } else {
+      const ratio = pm / 1500000;
+      const base = pricingTiers[1500000];
+      if (base) {
+        pd = Math.round((base[1] * ratio) / 10000) * 10000;
+        pw = Math.round((base[7] * ratio) / 10000) * 10000;
+      }
+    }
+
     const payload = {
       name,
       brand,
       category,
       transmission,
       engineCc: Number(engineCc),
-      pricePerDay: parseNum(pricePerDay),
-      pricePerWeek: parseNum(pricePerWeek),
-      pricePerMonth: parseNum(pricePerMonth),
+      pricePerDay: pd,
+      pricePerWeek: pw,
+      pricePerMonth: pm,
       deposit: parseNum(deposit),
       description,
       descriptionVi,
@@ -380,26 +395,6 @@ export function BikeForm({
             type="number"
             value={engineCc}
             onChange={(e) => setEngineCc(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label htmlFor="pd">{t("form_price_d")}</Label>
-          <Input
-            id="pd"
-            type="text"
-            inputMode="numeric"
-            value={pricePerDay}
-            onChange={(e) => setPricePerDay(formatNum(e.target.value))}
-          />
-        </div>
-        <div>
-          <Label htmlFor="pw">{t("form_price_w")}</Label>
-          <Input
-            id="pw"
-            type="text"
-            inputMode="numeric"
-            value={pricePerWeek}
-            onChange={(e) => setPricePerWeek(formatNum(e.target.value))}
           />
         </div>
         <div>

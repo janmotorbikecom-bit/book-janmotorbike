@@ -29,13 +29,7 @@ export function SiteHeader() {
           >
             {t("browse")}
           </Link>
-          <Link
-            to="/admin"
-            className="rounded-md px-3 py-2 text-foreground/70 hover:text-foreground"
-            activeProps={{ className: "rounded-md px-3 py-2 text-foreground" }}
-          >
-            {t("admin")}
-          </Link>
+
 
           <Button
             variant="ghost"
