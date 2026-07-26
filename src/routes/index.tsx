@@ -49,7 +49,7 @@ type BrandFilter = "All" | string;
 type SortOpt = "featured" | "price-asc" | "price-desc";
 
 function Storefront() {
-  const { bikes } = useStore();
+  const { bikes, loading } = useStore();
   const { t, lang, formatVnd } = useUI();
   const searchParams = Route.useSearch();
   const [q, setQ] = useState("");
@@ -219,7 +219,20 @@ function Storefront() {
         </div>
 
         <div className="mt-10">
-          {list.length === 0 ? (
+          {loading && list.length === 0 ? (
+            <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm animate-pulse">
+                  <div className="aspect-[4/3] bg-muted w-full"></div>
+                  <div className="p-5 flex flex-col gap-3">
+                    <div className="h-5 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                    <div className="h-10 bg-muted rounded mt-2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : list.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border p-16 text-center text-muted-foreground font-bold uppercase tracking-widest text-sm">
               {t("no_results")}
             </div>
