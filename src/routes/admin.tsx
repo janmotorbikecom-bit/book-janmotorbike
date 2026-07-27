@@ -123,7 +123,7 @@ function AdminLayout() {
             </nav>
           </aside>
           <main>
-            <Outlet context={{ role }} />
+            <Outlet />
           </main>
         </div>
         <Toaster richColors position="top-center" />

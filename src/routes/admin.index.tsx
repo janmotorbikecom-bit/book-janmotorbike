@@ -1,5 +1,5 @@
-import { createFileRoute, useOutletContext } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useMemo, useEffect } from "react";
 import { Plus, Pencil, Trash2, Copy, Link as LinkIcon, Tag } from "lucide-react";
 import { useStore, type Bike } from "@/lib/store";
 import { useUI } from "@/lib/ui-context";
@@ -26,7 +26,10 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function Inventory() {
-  const { role } = useOutletContext<{ role: "admin" | "staff" }>();
+  const [role, setRole] = useState<string | null>(null);
+  useEffect(() => {
+    setRole(localStorage.getItem("adminRole"));
+  }, []);
   const { bikes, toggleAvailable, removeBike } = useStore();
   const { formatVnd, t } = useUI();
   const [open, setOpen] = useState(false);
