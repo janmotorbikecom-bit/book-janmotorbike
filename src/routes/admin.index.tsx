@@ -14,6 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/lib/supabase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BikeForm } from "@/components/BikeForm";
 import { toast } from "sonner";
@@ -45,8 +47,13 @@ function Inventory() {
     setMode("add");
     setOpen(true);
   }
-  function openEdit(b: Bike) {
-    setEditing(b);
+  async function openEdit(b: Bike) {
+    try {
+      const { data } = await supabase.from("bikes").select("images").eq("id", b.id).single();
+      setEditing({ ...b, images: data?.images || [] });
+    } catch {
+      setEditing(b);
+    }
     setMode("edit");
     setOpen(true);
   }

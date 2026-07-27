@@ -17,6 +17,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 export function BikeDetailDialog({
   bike,
@@ -38,12 +39,35 @@ export function BikeDetailDialog({
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewName, setReviewName] = useState("");
   const [reviewComment, setReviewComment] = useState("");
+  
+  const [gallery, setGallery] = useState<string[]>([]);
+  const [loadingGallery, setLoadingGallery] = useState(false);
 
-  const gallery = useMemo(() => {
-    if (!bike) return [];
-    const imgs = bike.images && bike.images.length > 0 ? bike.images : [bike.imageUrl];
-    return imgs;
-  }, [bike]);
+  // Derive initial gallery from bike.images if available, else load lazily
+  useEffect(() => {
+    if (open && bike) {
+      if (bike.images && bike.images.length > 0) {
+        setGallery(bike.images);
+      } else {
+        setLoadingGallery(true);
+        supabase
+          .from("bikes")
+          .select("images")
+          .eq("id", bike.id)
+          .single()
+          .then(({ data }) => {
+            if (data?.images?.length) {
+              setGallery(data.images);
+            } else if (bike.imageUrl) {
+              setGallery([bike.imageUrl]);
+            }
+          })
+          .finally(() => setLoadingGallery(false));
+      }
+    } else {
+      setActiveImg(0);
+    }
+  }, [open, bike]);
 
   const days = useMemo(() => {
     if (!range?.from || !range?.to) return 0;
