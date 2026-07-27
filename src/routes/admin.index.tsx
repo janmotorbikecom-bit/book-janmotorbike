@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useOutletContext } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Plus, Pencil, Trash2, Copy, Link as LinkIcon, Tag } from "lucide-react";
 import { useStore, type Bike } from "@/lib/store";
@@ -26,6 +26,7 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function Inventory() {
+  const { role } = useOutletContext<{ role: "admin" | "staff" }>();
   const { bikes, toggleAvailable, removeBike } = useStore();
   const { formatVnd, t } = useUI();
   const [open, setOpen] = useState(false);
@@ -103,9 +104,11 @@ function Inventory() {
               <Tag className="size-4" /> {t("inv_open")}
             </a>
           </Button>
-          <Button onClick={openNew} className="bg-accent text-accent-foreground hover:bg-accent/90">
-            <Plus className="size-4" /> {t("admin_add")}
-          </Button>
+          {role === "admin" && (
+            <Button onClick={openNew} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Plus className="size-4" /> {t("admin_add")}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -135,6 +138,7 @@ function Inventory() {
                       <div className="flex items-center gap-1.5 rounded-full bg-background/95 px-2.5 py-1.5 shadow-sm backdrop-blur-sm border border-border">
                         <Switch
                           checked={b.available}
+                          disabled={role !== "admin"}
                           onCheckedChange={() => {
                             toggleAvailable(b.id);
                             toast.success(
@@ -189,30 +193,39 @@ function Inventory() {
                     </div>
 
                     <div className="mt-4 flex items-center gap-2 pt-1">
-                      <Button variant="secondary" className="flex-1" onClick={() => openEdit(b)}>
-                        <Pencil className="size-4 mr-1.5" /> {t("admin_edit")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => openClone(b)}
-                        title={t("admin_duplicate")}
-                        className="shrink-0"
-                      >
-                        <Copy className="size-4 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          removeBike(b.id);
-                          toast.success(t("toast_removed"));
-                        }}
-                        className="shrink-0 hover:bg-destructive hover:text-destructive-foreground border-border"
-                        title={t("admin_delete")}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      {role === "admin" ? (
+                        <>
+                          <Button variant="secondary" className="flex-1" onClick={() => openEdit(b)}>
+                            <Pencil className="size-4 mr-1.5" /> {t("admin_edit")}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => openClone(b)}
+                            title={t("admin_duplicate")}
+                            className="shrink-0"
+                          >
+                            <Copy className="size-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {
+                              if (confirm(t("admin_confirm_delete"))) {
+                                removeBike(b.id);
+                              }
+                            }}
+                            className="shrink-0 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
+                            title={t("admin_delete")}
+                          >
+                            <Trash2 className="size-4 text-muted-foreground hover:text-current" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Button variant="secondary" className="flex-1 opacity-50 cursor-not-allowed" title="Staff cannot edit">
+                          <Pencil className="size-4 mr-1.5" /> {t("admin_edit")} (Locked)
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -221,11 +234,13 @@ function Inventory() {
           </section>
         ))}
         {bikes.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border py-20 text-center">
-            <p className="text-muted-foreground">{t("inv_empty")}</p>
-            <Button onClick={openNew} className="mt-4">
-              <Plus className="mr-2 size-4" /> {t("inv_add_first")}
-            </Button>
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+            <p className="mb-4 text-muted-foreground">{t("inv_empty")}</p>
+            {role === "admin" && (
+              <Button onClick={openNew} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Plus className="mr-2 size-4" /> {t("admin_add_first")}
+              </Button>
+            )}
           </div>
         )}
       </div>

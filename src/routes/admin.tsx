@@ -20,11 +20,15 @@ export const Route = createFileRoute("/admin")({
 function AdminLayout() {
   const { t } = useUI();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [role, setRole] = useState<"admin" | "staff" | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem("adminAuth") === "true") {
+    const auth = localStorage.getItem("adminAuth");
+    const storedRole = localStorage.getItem("adminRole") as "admin" | "staff" | null;
+    if (auth === "true" && storedRole) {
+      setRole(storedRole);
       setIsAuthenticated(true);
     }
   }, []);
@@ -33,6 +37,13 @@ function AdminLayout() {
     e.preventDefault();
     if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
       localStorage.setItem("adminAuth", "true");
+      localStorage.setItem("adminRole", "admin");
+      setRole("admin");
+      setIsAuthenticated(true);
+    } else if (password === import.meta.env.VITE_STAFF_PASSWORD) {
+      localStorage.setItem("adminAuth", "true");
+      localStorage.setItem("adminRole", "staff");
+      setRole("staff");
       setIsAuthenticated(true);
     } else {
       setError("Mật khẩu không đúng" || "Invalid password");
@@ -87,16 +98,20 @@ function AdminLayout() {
               <NavItem to="/admin/bookings" icon={<Calendar className="size-4" />}>
                 {t("admin_bookings") || "Bookings"}
               </NavItem>
-              <NavItem to="/admin/pricing" icon={<DollarSign className="size-4" />}>
-                Bảng giá
-              </NavItem>
-              <NavItem to="/admin/settings" icon={<SettingsIcon className="size-4" />}>
-                {t("admin_settings")}
-              </NavItem>
+              {role === "admin" && (
+                <>
+                  <NavItem to="/admin/pricing" icon={<DollarSign className="size-4" />}>
+                    Bảng giá
+                  </NavItem>
+                  <NavItem to="/admin/settings" icon={<SettingsIcon className="size-4" />}>
+                    {t("admin_settings")}
+                  </NavItem>
+                </>
+              )}
             </nav>
           </aside>
           <main>
-            <Outlet />
+            <Outlet context={{ role }} />
           </main>
         </div>
         <Toaster richColors position="top-center" />
