@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { StoreProvider } from "@/lib/store";
 import { SiteHeader } from "@/components/SiteHeader";
 import { useUI } from "@/lib/ui-context";
-import { LayoutGrid, Settings as SettingsIcon, Calendar, DollarSign } from "lucide-react";
+import { LayoutGrid, Settings as SettingsIcon, Calendar, DollarSign, MessageSquare } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -111,6 +111,9 @@ function AdminLayout() {
               </NavItem>
               <NavItem to="/admin/bookings" icon={<Calendar className="size-4" />}>
                 {t("admin_bookings") || "Bookings"}
+              </NavItem>
+              <NavItem to="/admin/reviews" icon={<MessageSquare className="size-4" />}>
+                {t("admin_reviews") || "Đánh giá"}
               </NavItem>
               {role === "admin" && (
                 <NavItem to="/admin/pricing" icon={<DollarSign className="size-4" />}>

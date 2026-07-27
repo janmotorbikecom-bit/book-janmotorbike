@@ -51,6 +51,7 @@ type Store = {
   toggleAvailable: (id: string) => Promise<void>;
   setSettings: (s: Settings) => Promise<void>;
   addReview: (r: Omit<Review, "id" | "createdAt">) => Promise<void>;
+  removeReview: (id: string) => Promise<void>;
   addBooking: (b: Omit<Booking, "id" | "createdAt">) => Promise<void>;
   updateBookingStatus: (id: string, status: Booking["status"]) => Promise<void>;
   updatePricingTier: (rate: number, prices: number[]) => Promise<void>;
@@ -320,6 +321,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           .select()
           .single();
         if (!error && data) setReviews((prev) => [mapReview(data as Record<string, unknown>), ...prev]);
+      },
+
+      removeReview: async (id) => {
+        const { error } = await supabase.from("reviews").delete().eq("id", id);
+        if (!error) setReviews((prev) => prev.filter((r) => r.id !== id));
       },
 
       addBooking: async (b) => {
