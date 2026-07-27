@@ -113,15 +113,13 @@ function AdminLayout() {
                 {t("admin_bookings") || "Bookings"}
               </NavItem>
               {role === "admin" && (
-                <>
-                  <NavItem to="/admin/pricing" icon={<DollarSign className="size-4" />}>
-                    Bảng giá
-                  </NavItem>
-                  <NavItem to="/admin/settings" icon={<SettingsIcon className="size-4" />}>
-                    {t("admin_settings")}
-                  </NavItem>
-                </>
+                <NavItem to="/admin/pricing" icon={<DollarSign className="size-4" />}>
+                  Bảng giá
+                </NavItem>
               )}
+              <NavItem to="/admin/settings" icon={<SettingsIcon className="size-4" />}>
+                {t("admin_settings")}
+              </NavItem>
             </nav>
           </aside>
           <main>
