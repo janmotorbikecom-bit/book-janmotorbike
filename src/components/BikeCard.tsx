@@ -1,13 +1,17 @@
-import { MessageCircle, Gauge, CalendarDays, CalendarRange, Clock } from "lucide-react";
-import type { Bike } from "@/lib/store";
+import { MessageCircle, Gauge, CalendarDays, CalendarRange, Clock, Star } from "lucide-react";
+import { useStore, type Bike } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUI } from "@/lib/ui-context";
 
 export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => void }) {
   const { lang, t, formatVnd } = useUI();
+  const { reviews } = useStore();
   const now = new Date().toISOString().split("T")[0];
   const isBusy = bike.busyFrom && bike.busyTo && bike.busyTo >= now;
+
+  const bikeReviews = reviews.filter((r) => r.bikeId === bike.id);
+  const avgRating = bikeReviews.length > 0 ? bikeReviews.reduce((acc, r) => acc + r.rating, 0) / bikeReviews.length : 0;
 
   const formatDate = (d: string) => {
     if (!d) return "";
@@ -32,6 +36,12 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
         <Badge className="absolute left-4 top-4 border border-white/20 bg-white/90 text-black backdrop-blur-md shadow-sm font-bold uppercase tracking-wider text-[10px] z-20">
           {bike.category}
         </Badge>
+        {bikeReviews.length > 0 && (
+          <Badge className="absolute right-4 top-4 border border-amber-500/30 bg-amber-500/90 text-white backdrop-blur-md shadow-md font-bold text-[11px] z-20 flex items-center gap-1">
+            <Star className="size-3.5 fill-white" />
+            {avgRating.toFixed(1)} ({bikeReviews.length})
+          </Badge>
+        )}
         {isBusy && (
           <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex items-center justify-center z-10 transition-opacity">
             <div className="bg-destructive text-destructive-foreground px-4 py-2 rounded-xl font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-1 shadow-xl border border-white/20 transform -rotate-3 scale-110">
