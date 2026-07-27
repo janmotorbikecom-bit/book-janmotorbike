@@ -354,38 +354,38 @@ export function BikeDetailDialog({
           <div className="md:h-full md:overflow-y-auto p-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {/* 1. Pricing */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="flex flex-col items-center rounded-lg border border-border bg-card p-2 shadow-sm">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex flex-col items-center rounded-xl border border-blue-200/50 bg-blue-50/50 dark:bg-blue-950/20 p-2 shadow-sm transition-transform hover:scale-[1.02]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                   {t("price_daily")}
                 </span>
-                <span className="mt-0.5 font-display text-sm font-bold text-primary">
+                <span className="mt-0.5 font-display text-sm font-bold text-blue-700 dark:text-blue-300">
                   {formatVnd(bike.pricePerDay)}
                 </span>
               </div>
-              <div className="flex flex-col items-center rounded-lg border border-border bg-card p-2 shadow-sm">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex flex-col items-center rounded-xl border border-purple-200/50 bg-purple-50/50 dark:bg-purple-950/20 p-2 shadow-sm transition-transform hover:scale-[1.02]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                   {t("price_weekly")}
                 </span>
-                <span className="mt-0.5 font-display text-sm font-bold text-primary">
+                <span className="mt-0.5 font-display text-sm font-bold text-purple-700 dark:text-purple-300">
                   {formatVnd(bike.pricePerWeek)}
                 </span>
               </div>
-              <div className="flex flex-col items-center rounded-lg border border-border bg-card p-2 shadow-sm">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex flex-col items-center rounded-xl border border-orange-200/50 bg-orange-50/50 dark:bg-orange-950/20 p-2 shadow-sm transition-transform hover:scale-[1.02]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
                   {t("price_monthly")}
                 </span>
-                <span className="mt-0.5 font-display text-sm font-bold text-primary">
+                <span className="mt-0.5 font-display text-sm font-bold text-orange-700 dark:text-orange-300">
                   {formatVnd(bike.pricePerMonth)}
                 </span>
               </div>
             </div>
-            <div className="mt-1.5 flex justify-center">
-              <span className="rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground border border-border/50">
-                {t("deposit")}:{" "}
-                <span className="font-semibold text-foreground ml-1">
+            <div className="mt-2.5 flex justify-center">
+              <div className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 px-4 py-1.5 text-sm font-medium border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm">
+                <span className="text-muted-foreground">{t("deposit")}:</span>
+                <span className="font-display text-base font-bold tracking-wide text-emerald-700 dark:text-emerald-400">
                   {formatVnd(bike.deposit)}
                 </span>
-              </span>
+              </div>
             </div>
 
             {/* 2. Customer info */}
