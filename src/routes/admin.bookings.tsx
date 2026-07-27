@@ -277,7 +277,7 @@ function CalendarGanttView({ bikes, bookings, lang, formatVnd, updateBookingStat
             const bikeBookings = sortedBookings.filter((b: any) => b.bikeId === bike.id && b.status !== "cancelled");
             
             // Synthesize a fake booking for manually locked bikes
-            if (bike.available === false && bike.busyFrom && bike.busyTo) {
+            if (bike.busyFrom && bike.busyTo) {
               bikeBookings.push({
                 id: `manual-${bike.id}`,
                 bikeId: bike.id,
