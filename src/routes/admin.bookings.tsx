@@ -274,7 +274,23 @@ function CalendarGanttView({ bikes, bookings, lang, formatVnd, updateBookingStat
           
           {/* Bike Rows */}
           {bikes.map((bike: any) => {
-            const bikeBookings = sortedBookings.filter(b => b.bikeId === bike.id && b.status !== "cancelled");
+            const bikeBookings = sortedBookings.filter((b: any) => b.bikeId === bike.id && b.status !== "cancelled");
+            
+            // Synthesize a fake booking for manually locked bikes
+            if (bike.available === false && bike.busyFrom && bike.busyTo) {
+              bikeBookings.push({
+                id: `manual-${bike.id}`,
+                bikeId: bike.id,
+                fromDate: bike.busyFrom,
+                toDate: bike.busyTo,
+                status: "confirmed", // Red color
+                customerName: lang === "vi" ? "Đang thuê (Khóa thủ công)" : "Rented (Manual)",
+                phone: "-",
+                total: 0,
+                isManual: true,
+              });
+            }
+
             return (
               <div key={bike.id} className="grid grid-cols-[180px_repeat(14,minmax(50px,1fr))] border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors relative">
                 <div className="p-3 text-[11px] font-semibold sticky left-0 bg-card border-r border-border z-10 flex items-center shadow-[1px_0_5px_rgba(0,0,0,0.05)] truncate" title={bike.name}>
@@ -327,20 +343,26 @@ function CalendarGanttView({ bikes, bookings, lang, formatVnd, updateBookingStat
                                   <span className="font-bold text-primary">{formatVnd(booking.total)}</span>
                                 </div>
                                 <div className="mt-2 flex gap-2">
-                                  <Select
-                                    value={booking.status}
-                                    onValueChange={(v) => updateBookingStatus(booking.id, v as Booking["status"])}
-                                  >
-                                    <SelectTrigger className="flex-1 h-8 text-xs">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="pending">{lang === "vi" ? "Chờ xử lý" : "Pending"}</SelectItem>
-                                      <SelectItem value="confirmed">{lang === "vi" ? "Xác nhận" : "Confirmed"}</SelectItem>
-                                      <SelectItem value="completed">{lang === "vi" ? "Hoàn thành" : "Completed"}</SelectItem>
-                                      <SelectItem value="cancelled">{lang === "vi" ? "Hủy" : "Cancelled"}</SelectItem>
-                                    </SelectContent>
-                                  </Select>
+                                  {booking.isManual ? (
+                                    <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded-md border border-amber-200 w-full">
+                                      {lang === "vi" ? "Xe bị khóa thủ công. Hãy vào phần Kho xe -> Sửa để mở khóa." : "Manually locked. Edit the bike in Inventory to unlock."}
+                                    </div>
+                                  ) : (
+                                    <Select
+                                      value={booking.status}
+                                      onValueChange={(v) => updateBookingStatus(booking.id, v as Booking["status"])}
+                                    >
+                                      <SelectTrigger className="flex-1 h-8 text-xs">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="pending">{lang === "vi" ? "Chờ xử lý" : "Pending"}</SelectItem>
+                                        <SelectItem value="confirmed">{lang === "vi" ? "Xác nhận" : "Confirmed"}</SelectItem>
+                                        <SelectItem value="completed">{lang === "vi" ? "Hoàn thành" : "Completed"}</SelectItem>
+                                        <SelectItem value="cancelled">{lang === "vi" ? "Hủy" : "Cancelled"}</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
                                 </div>
                              </div>
                            </PopoverContent>
