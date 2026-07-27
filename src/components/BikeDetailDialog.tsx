@@ -476,7 +476,7 @@ export function BikeDetailDialog({
                 <span className="font-medium">
                   {t("total_estimate")} ({days} {t("days")})
                 </span>
-                <span className="font-display text-lg font-bold text-accent-foreground">
+                <span className="font-display text-lg font-bold text-primary">
                   {formatVnd(estimate)}
                 </span>
               </div>

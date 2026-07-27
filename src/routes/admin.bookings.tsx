@@ -12,9 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { format, isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, isWithinInterval, parseISO, startOfDay, endOfDay, addDays, subDays, isSameDay } from "date-fns";
 import { vi, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, Phone, User, Calendar as CalendarIcon, DollarSign, Tag } from "lucide-react";
 
 export const Route = createFileRoute("/admin/bookings")({
   component: BookingsPage,
@@ -24,6 +27,7 @@ function BookingsPage() {
   const { bookings, bikes, updateBookingStatus } = useStore();
   const { lang, formatVnd } = useUI();
   const [selectedBikeId, setSelectedBikeId] = useState<string>("All");
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const filteredBookings = useMemo(() => {
     let out = bookings.sort(
@@ -89,9 +93,16 @@ function BookingsPage() {
             {lang === "vi" ? "Theo dõi và quản lý lịch đặt xe" : "Track and manage bookings"}
           </p>
         </div>
+        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-[200px]">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">{lang === "vi" ? "Danh sách" : "List"}</TabsTrigger>
+            <TabsTrigger value="calendar">{lang === "vi" ? "Lịch (Gantt)" : "Calendar"}</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_300px]">
+      {viewMode === "list" ? (
+        <div className="grid gap-6 md:grid-cols-[1fr_300px]">
         {/* Left: Bookings List */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
@@ -195,6 +206,154 @@ function BookingsPage() {
           </div>
         </div>
       </div>
+      ) : (
+        <CalendarGanttView 
+          bikes={bikes} 
+          bookings={bookings} 
+          lang={lang} 
+          formatVnd={formatVnd} 
+          updateBookingStatus={updateBookingStatus} 
+          getStatusBadge={getStatusBadge}
+        />
+      )}
     </div>
   );
+}
+
+function CalendarGanttView({ bikes, bookings, lang, formatVnd, updateBookingStatus, getStatusBadge }: any) {
+  const [startDate, setStartDate] = useState(() => startOfDay(new Date()));
+  const daysToShow = 14;
+
+  const dates = Array.from({ length: daysToShow }).map((_, i) => addDays(startDate, i));
+
+  // Sort bookings so confirmed/completed show on top if multiple overlap
+  const sortedBookings = useMemo(() => {
+    return [...bookings].sort((a, b) => {
+      const w: Record<string, number> = { completed: 3, confirmed: 2, pending: 1, cancelled: 0 };
+      return (w[b.status] || 0) - (w[a.status] || 0);
+    });
+  }, [bookings]);
+
+  return (
+    <div className="flex flex-col gap-4 animate-in fade-in duration-300">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => setStartDate(subDays(startDate, 7))}>
+            <ChevronLeft className="size-4 mr-1" />
+            {lang === "vi" ? "7 ngày trước" : "Prev 7 days"}
+          </Button>
+          <span className="font-bold text-sm bg-accent/10 text-accent-foreground px-3 py-1.5 rounded-md border border-border">
+            {format(startDate, "dd/MM/yyyy")} - {format(dates[dates.length - 1], "dd/MM/yyyy")}
+          </span>
+          <Button variant="outline" size="sm" onClick={() => setStartDate(addDays(startDate, 7))}>
+            {lang === "vi" ? "7 ngày sau" : "Next 7 days"}
+            <ChevronRight className="size-4 ml-1" />
+          </Button>
+        </div>
+        <div className="flex items-center gap-3 text-xs font-medium bg-card px-3 py-1.5 rounded-full border border-border shadow-sm">
+           <div className="flex items-center gap-1"><div className="size-2.5 rounded-sm bg-amber-500"></div> {lang === "vi" ? "Chờ xử lý" : "Pending"}</div>
+           <div className="flex items-center gap-1"><div className="size-2.5 rounded-sm bg-blue-500"></div> {lang === "vi" ? "Xác nhận" : "Confirmed"}</div>
+           <div className="flex items-center gap-1"><div className="size-2.5 rounded-sm bg-emerald-500"></div> {lang === "vi" ? "Hoàn thành" : "Completed"}</div>
+        </div>
+      </div>
+      
+      <div className="overflow-x-auto border border-border rounded-xl bg-card shadow-sm scrollbar-thin">
+        <div className="min-w-[900px]">
+          {/* Header Row */}
+          <div className="grid grid-cols-[180px_repeat(14,minmax(50px,1fr))] border-b border-border bg-muted/50 relative">
+            <div className="p-3 font-bold text-xs sticky left-0 bg-muted/50 border-r border-border z-20 flex items-center shadow-[1px_0_5px_rgba(0,0,0,0.05)]">
+              {lang === "vi" ? "Xe" : "Bike"}
+            </div>
+            {dates.map((d) => (
+              <div key={d.toISOString()} className={cn("p-2 text-center border-r border-border text-[10px] font-medium flex flex-col items-center justify-center", isSameDay(d, startOfDay(new Date())) && "bg-primary/10 text-primary font-bold")}>
+                <span className="uppercase text-muted-foreground">{format(d, "EEE")}</span>
+                <span className="text-sm">{format(d, "dd/MM")}</span>
+              </div>
+            ))}
+          </div>
+          
+          {/* Bike Rows */}
+          {bikes.map((bike: any) => {
+            const bikeBookings = sortedBookings.filter(b => b.bikeId === bike.id && b.status !== "cancelled");
+            return (
+              <div key={bike.id} className="grid grid-cols-[180px_repeat(14,minmax(50px,1fr))] border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors relative">
+                <div className="p-3 text-[11px] font-semibold sticky left-0 bg-card border-r border-border z-10 flex items-center shadow-[1px_0_5px_rgba(0,0,0,0.05)] truncate" title={bike.name}>
+                  <div className="truncate pr-2">
+                    {bike.name}
+                    <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{bike.licensePlate || bike.category}</div>
+                  </div>
+                </div>
+                {dates.map((d) => {
+                  const booking = bikeBookings.find((b: any) => {
+                     const from = startOfDay(parseISO(b.fromDate));
+                     const to = startOfDay(parseISO(b.toDate));
+                     return d >= from && d <= to;
+                  });
+                  
+                  return (
+                    <div key={d.toISOString()} className="border-r border-border p-1 relative min-h-[44px]">
+                       {booking && (
+                         <Popover>
+                           <PopoverTrigger asChild>
+                             <button className={cn(
+                               "absolute inset-y-1 z-0 flex items-center overflow-hidden whitespace-nowrap px-1.5 text-[10px] font-bold text-white transition-transform hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 focus:ring-offset-background",
+                               booking.status === "pending" ? "bg-amber-500" :
+                               booking.status === "confirmed" ? "bg-blue-500" :
+                               "bg-emerald-500",
+                               isSameDay(d, startOfDay(parseISO(booking.fromDate))) ? "left-1 rounded-l-md" : "left-0",
+                               isSameDay(d, startOfDay(parseISO(booking.toDate))) ? "right-1 rounded-r-md" : "right-0"
+                             )}>
+                               {isSameDay(d, startOfDay(parseISO(booking.fromDate))) ? booking.customerName : ""}
+                             </button>
+                           </PopoverTrigger>
+                           <PopoverContent className="w-80 p-0" align="start" sideOffset={8}>
+                             <div className="p-4 border-b border-border bg-muted/30">
+                                <div className="flex justify-between items-start mb-2">
+                                  <h4 className="font-bold">{booking.customerName}</h4>
+                                  {getStatusBadge(booking.status)}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                  <CalendarIcon className="size-3" />
+                                  {format(parseISO(booking.fromDate), "dd/MM/yyyy")} - {format(parseISO(booking.toDate), "dd/MM/yyyy")}
+                                </div>
+                             </div>
+                             <div className="p-4 grid gap-3 text-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Phone className="size-4 text-foreground" />
+                                  {booking.phone}
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Tag className="size-4 text-foreground" />
+                                  <span className="font-bold text-primary">{formatVnd(booking.total)}</span>
+                                </div>
+                                <div className="mt-2 flex gap-2">
+                                  <Select
+                                    value={booking.status}
+                                    onValueChange={(v) => updateBookingStatus(booking.id, v as Booking["status"])}
+                                  >
+                                    <SelectTrigger className="flex-1 h-8 text-xs">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">{lang === "vi" ? "Chờ xử lý" : "Pending"}</SelectItem>
+                                      <SelectItem value="confirmed">{lang === "vi" ? "Xác nhận" : "Confirmed"}</SelectItem>
+                                      <SelectItem value="completed">{lang === "vi" ? "Hoàn thành" : "Completed"}</SelectItem>
+                                      <SelectItem value="cancelled">{lang === "vi" ? "Hủy" : "Cancelled"}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                             </div>
+                           </PopoverContent>
+                         </Popover>
+                       )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  )
 }

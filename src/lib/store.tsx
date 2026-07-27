@@ -155,21 +155,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setLoading((prev) => (bikes.length === 0 ? true : prev));
       try {
         const [
-          { data: bikesData },
-          { data: settingsData },
-          { data: tiersData },
+          { data: bikesData, error: bikesError },
+          { data: settingsData, error: settingsError },
+          { data: tiersData, error: tiersError },
         ] = await Promise.all([
-          supabase.from("bikes").select("*").order("created_at", { ascending: false }),
+          supabase
+            .from("bikes")
+            .select("id, name, brand, category, engine_cc, transmission, price_per_day, price_per_week, price_per_month, deposit, description, description_vi, image_url, available, is_for_sale, sale_price, busy_from, busy_to, created_at")
+            .order("created_at", { ascending: false }),
           supabase.from("settings").select("*").eq("id", 1).single(),
           supabase.from("pricing_tiers").select("*").order("rate"),
         ]);
+
+        if (bikesError) console.error("Bikes error:", bikesError);
+        if (settingsError) console.error("Settings error:", settingsError);
+        if (tiersError) console.error("Tiers error:", tiersError);
 
         if (!mounted) return;
 
         if (bikesData && bikesData.length > 0) {
           const b = bikesData.map((r) => mapBike(r as Record<string, unknown>));
           setBikes(b);
-          localStorage.setItem("jan_bikes_cache", JSON.stringify(b));
+          try {
+            localStorage.setItem("jan_bikes_cache", JSON.stringify(b));
+          } catch (e) {
+            console.warn("Storage full, clearing cache", e);
+            localStorage.clear();
+          }
         }
         if (settingsData) {
           const s = settingsData as Record<string, unknown>;
