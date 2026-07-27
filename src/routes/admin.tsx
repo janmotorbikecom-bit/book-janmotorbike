@@ -50,7 +50,7 @@ function AdminLayout() {
       setRole("staff");
       setIsAuthenticated(true);
     } else {
-      setError("Sai tài khoản hoặc mật khẩu" || "Invalid credentials");
+      setError(lang === "vi" ? "Sai tài khoản hoặc mật khẩu" : "Invalid credentials");
     }
   }
 

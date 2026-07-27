@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useStore, type Bike, type BikeCategory, type Transmission } from "@/lib/store";
 import { optimizeImageToWebP } from "@/lib/image-utils";
 import { toast } from "sonner";
+import { generateFakeReviewsForBike } from "@/lib/fake-reviews";
 
 const MAX_IMAGES = 4;
 
@@ -73,6 +74,7 @@ export function BikeForm({
   const [imageUrlInput, setImageUrlInput] = useState("");
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generateReviews, setGenerateReviews] = useState(!isEdit);
 
   function handleFilesSelect(files: File[]) {
     if (files.length) {
@@ -274,7 +276,16 @@ export function BikeForm({
         await updateBike(initial.id, payload);
         toast.success(t("toast_updated"));
       } else {
-        await addBike(payload);
+        const addedBike = await addBike(payload);
+        if (addedBike && generateReviews) {
+          try {
+            await generateFakeReviewsForBike(addedBike.id);
+            toast.success(lang === "vi" ? "Đã tạo review tự động!" : "Auto-reviews generated!");
+          } catch (e) {
+            console.error("Failed to generate reviews:", e);
+            toast.error(lang === "vi" ? "Lỗi tạo review" : "Failed to generate reviews");
+          }
+        }
         toast.success(mode === "clone" ? t("toast_duplicated") : t("toast_added"));
       }
       onDone?.();
@@ -595,7 +606,27 @@ export function BikeForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2">
+      {!isEdit && (
+        <div className="flex items-center space-x-2 rounded-lg border bg-accent/30 p-4">
+          <Switch
+            id="generate-reviews"
+            checked={generateReviews}
+            onCheckedChange={setGenerateReviews}
+          />
+          <Label htmlFor="generate-reviews" className="flex flex-col gap-1">
+            <span className="font-semibold text-accent-foreground">
+              {lang === "vi" ? "Tự động tạo Review ảo" : "Auto-generate fake reviews"}
+            </span>
+            <span className="text-xs text-muted-foreground font-normal">
+              {lang === "vi" 
+                ? "Tạo tự động số lượng ngẫu nhiên review 4.8 - 5.0 sao cho xe này" 
+                : "Automatically generate a random amount of 4.8 - 5.0 star reviews for this bike"}
+            </span>
+          </Label>
+        </div>
+      )}
+
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t mt-8">
         <Button type="button" variant="outline" onClick={onDone}>
           {t("admin_cancel")}
         </Button>

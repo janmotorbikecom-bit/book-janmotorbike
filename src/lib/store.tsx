@@ -45,7 +45,7 @@ type Store = {
   bookings: Booking[];
   pricingTiers: Record<number, number[]>;
   loading: boolean;
-  addBike: (b: Omit<Bike, "id">) => Promise<void>;
+  addBike: (b: Omit<Bike, "id">) => Promise<Bike | undefined>;
   updateBike: (id: string, b: Partial<Bike>) => Promise<void>;
   removeBike: (id: string) => Promise<void>;
   toggleAvailable: (id: string) => Promise<void>;
@@ -241,7 +241,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       pricingTiers,
       loading,
 
-      addBike: async (b) => {
+      addBike: async (b): Promise<Bike | undefined> => {
         const row = {
           name: b.name,
           brand: b.brand,
@@ -264,7 +264,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
         const { data, error } = await supabase.from("bikes").insert(row).select().single();
         if (error) throw new Error(error.message);
-        if (data) setBikes((prev) => [mapBike(data as Record<string, unknown>), ...prev]);
+        if (data) {
+          const newBike = mapBike(data as Record<string, unknown>);
+          setBikes((prev) => [newBike, ...prev]);
+          return newBike;
+        }
       },
 
       updateBike: async (id, b) => {

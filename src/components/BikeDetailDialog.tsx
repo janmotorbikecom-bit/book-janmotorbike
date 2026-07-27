@@ -61,8 +61,8 @@ export function BikeDetailDialog({
             } else if (bike.imageUrl) {
               setGallery([bike.imageUrl]);
             }
-          })
-          .finally(() => setLoadingGallery(false));
+            setLoadingGallery(false);
+          });
       }
     } else {
       setActiveImg(0);
