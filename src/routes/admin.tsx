@@ -21,6 +21,7 @@ function AdminLayout() {
   const { t } = useUI();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<"admin" | "staff" | null>(null);
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -35,18 +36,21 @@ function AdminLayout() {
 
   function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
+    const adminUser = import.meta.env.VITE_ADMIN_USERNAME || "admin";
+    const staffUser = import.meta.env.VITE_STAFF_USERNAME || "staff";
+
+    if (username === adminUser && password === import.meta.env.VITE_ADMIN_PASSWORD) {
       localStorage.setItem("adminAuth", "true");
       localStorage.setItem("adminRole", "admin");
       setRole("admin");
       setIsAuthenticated(true);
-    } else if (password === import.meta.env.VITE_STAFF_PASSWORD) {
+    } else if (username === staffUser && password === import.meta.env.VITE_STAFF_PASSWORD) {
       localStorage.setItem("adminAuth", "true");
       localStorage.setItem("adminRole", "staff");
       setRole("staff");
       setIsAuthenticated(true);
     } else {
-      setError("Mật khẩu không đúng" || "Invalid password");
+      setError("Sai tài khoản hoặc mật khẩu" || "Invalid credentials");
     }
   }
 
@@ -58,6 +62,17 @@ function AdminLayout() {
           <form onSubmit={handleLogin} className="grid gap-4">
             <div>
               <input
+                type="text"
+                placeholder="Username (ID)"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm mb-3"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError("");
+                }}
+                autoFocus
+              />
+              <input
                 type="password"
                 placeholder="Password"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -66,7 +81,6 @@ function AdminLayout() {
                   setPassword(e.target.value);
                   setError("");
                 }}
-                autoFocus
               />
               {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
             </div>
