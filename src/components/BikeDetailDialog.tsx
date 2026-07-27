@@ -397,7 +397,7 @@ export function BikeDetailDialog({
                 <Input
                   id="bname"
                   className="h-9"
-                  placeholder={lang === "vi" ? "Nguyễn Văn A" : "John Doe"}
+                  placeholder={lang === "vi" ? "Hãy điền tên của bạn" : "Please enter your name"}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -409,7 +409,7 @@ export function BikeDetailDialog({
                 <Input
                   id="bphone"
                   className="h-9"
-                  placeholder="+84 900 000 000"
+                  placeholder={lang === "vi" ? "Hãy điền số điện thoại của bạn" : "Please enter your phone number"}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
