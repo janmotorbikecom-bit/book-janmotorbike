@@ -24,7 +24,7 @@ export const Route = createFileRoute("/sale")({
 });
 
 function SalePage() {
-  const { bikes, settings } = useStore();
+  const { bikes, settings, loading } = useStore();
   const { formatVnd, lang } = useUI();
   const list = bikes.filter((b) => b.isForSale && (b.salePrice ?? 0) > 0);
   const [selected, setSelected] = useState<Bike | null>(null);
@@ -55,7 +55,22 @@ function SalePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-10">
-        {list.length === 0 ? (
+        {loading && list.length === 0 ? (
+          // Skeleton cards while loading
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm animate-pulse">
+                <div className="aspect-[3/4] bg-muted w-full" />
+                <div className="p-5 flex flex-col gap-3">
+                  <div className="h-5 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-8 bg-muted rounded mt-1 w-1/3" />
+                  <div className="h-11 bg-muted rounded mt-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : list.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
             {lang === "vi" ? "Hiện không có xe đang bán." : "No bikes are for sale right now."}
           </div>
