@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { MessageCircle, Gauge } from "lucide-react";
 import { StoreProvider, useStore, type Bike } from "@/lib/store";
 import { useUI } from "@/lib/ui-context";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SaleDetailDialog } from "@/components/SaleDetailDialog";
 
 export const Route = createFileRoute("/sale")({
   head: () => ({
@@ -25,6 +27,13 @@ function SalePage() {
   const { bikes, settings } = useStore();
   const { formatVnd, lang } = useUI();
   const list = bikes.filter((b) => b.isForSale && (b.salePrice ?? 0) > 0);
+  const [selected, setSelected] = useState<Bike | null>(null);
+  const [open, setOpen] = useState(false);
+
+  function openBike(b: Bike) {
+    setSelected(b);
+    setOpen(true);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,11 +69,14 @@ function SalePage() {
                 owner={settings.ownerName}
                 formatVnd={formatVnd}
                 lang={lang}
+                onOpen={() => openBike(b)}
               />
             ))}
           </div>
         )}
       </section>
+
+      <SaleDetailDialog bike={selected} open={open} onOpenChange={setOpen} />
 
       <footer className="border-t border-border py-8 text-center text-sm text-muted-foreground">
         © 2019 JAN'S MOTORBIKE
@@ -79,12 +91,14 @@ function SaleCard({
   owner,
   formatVnd,
   lang,
+  onOpen,
 }: {
   bike: Bike;
   whatsapp: string;
   owner: string;
   formatVnd: (v: number) => string;
   lang: "en" | "vi";
+  onOpen: () => void;
 }) {
   const price = bike.salePrice ?? 0;
   const msg =
@@ -95,7 +109,12 @@ function SaleCard({
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30">
-      <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/10 text-left">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-muted/30 to-muted/10 text-left w-full cursor-pointer"
+        aria-label={`Xem chi tiết ${bike.name}`}
+      >
         <img
           src={bike.imageUrl}
           alt={bike.name}
@@ -106,7 +125,12 @@ function SaleCard({
         <Badge className="absolute left-4 top-4 border border-white/20 bg-white/90 text-black backdrop-blur-md shadow-sm font-bold uppercase tracking-wider text-[10px]">
           {bike.category}
         </Badge>
-      </div>
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="bg-black/60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full backdrop-blur-sm">
+            {lang === "vi" ? "Xem chi tiết" : "View Details"}
+          </span>
+        </div>
+      </button>
       <div className="flex flex-1 flex-col p-5">
         <div className="flex-1">
           <div className="flex items-start justify-between gap-3 mb-2">
