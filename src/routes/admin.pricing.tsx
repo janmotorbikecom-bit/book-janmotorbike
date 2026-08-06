@@ -154,20 +154,30 @@ function PricingEditor({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {days.map((day) => (
-            <div key={day} className="flex flex-col gap-1.5">
-              <Label className="text-xs text-muted-foreground">Ngày {day}</Label>
-              <div className="relative">
-                <Input
-                  value={prices[day] === 0 ? "" : prices[day].toLocaleString("vi-VN")}
-                  onChange={(e) => handleChange(day, e.target.value)}
-                  className="pr-6 text-right font-mono text-sm"
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                  đ
-                </span>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {[
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24, 25],
+          ].map((chunk, chunkIdx) => (
+            <div key={chunkIdx} className="flex flex-col gap-4">
+              {chunk.map((day) => (
+                <div key={day} className="flex flex-col gap-1.5">
+                  <Label className="text-xs text-muted-foreground">Ngày {day}</Label>
+                  <div className="relative">
+                    <Input
+                      value={prices[day] === 0 ? "" : prices[day].toLocaleString("vi-VN")}
+                      onChange={(e) => handleChange(day, e.target.value)}
+                      className="pr-6 text-right font-mono text-sm"
+                    />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                      đ
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

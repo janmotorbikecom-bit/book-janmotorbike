@@ -39,6 +39,7 @@ export function SaleDetailDialog({
       if (bike.images && bike.images.length > 0) {
         setGallery(bike.images);
       } else {
+        setGallery(bike.imageUrl ? [bike.imageUrl] : []); // Immediately show main image
         setLoadingGallery(true);
         supabase
           .from("bikes")
@@ -48,14 +49,13 @@ export function SaleDetailDialog({
           .then(({ data }) => {
             if (data?.images?.length) {
               setGallery(data.images);
-            } else if (bike.imageUrl) {
-              setGallery([bike.imageUrl]);
             }
             setLoadingGallery(false);
           });
       }
     } else {
       setActiveImg(0);
+      setGallery([]);
     }
   }, [open, bike]);
 

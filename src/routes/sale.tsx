@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { MessageCircle, Gauge } from "lucide-react";
+import { MessageCircle, Gauge, Star } from "lucide-react";
 import { StoreProvider, useStore, type Bike } from "@/lib/store";
 import { useUI } from "@/lib/ui-context";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/sale")({
 function SalePage() {
   const { bikes, settings, loading } = useStore();
   const { formatVnd, lang } = useUI();
-  const list = bikes.filter((b) => b.isForSale && (b.salePrice ?? 0) > 0);
+  const list = bikes.filter((b) => b.isForSale && b.available && (b.salePrice ?? 0) > 0);
   const [selected, setSelected] = useState<Bike | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -57,7 +57,7 @@ function SalePage() {
       <section className="mx-auto max-w-6xl px-4 py-10">
         {loading && list.length === 0 ? (
           // Skeleton cards while loading
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex flex-col overflow-hidden rounded-[2rem] border border-border/50 bg-card shadow-sm animate-pulse">
                 <div className="aspect-[3/4] bg-muted w-full" />
@@ -75,8 +75,8 @@ function SalePage() {
             {lang === "vi" ? "Hiện không có xe đang bán." : "No bikes are for sale right now."}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((b) => (
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {list.map((b, i) => (
               <SaleCard
                 key={b.id}
                 bike={b}
@@ -85,6 +85,7 @@ function SalePage() {
                 formatVnd={formatVnd}
                 lang={lang}
                 onOpen={() => openBike(b)}
+                priority={i < 6}
               />
             ))}
           </div>
@@ -114,7 +115,12 @@ function SaleCard({
   formatVnd: (v: number) => string;
   lang: "en" | "vi";
   onOpen: () => void;
+  priority?: boolean;
 }) {
+  const { reviews } = useStore();
+  const bikeReviews = reviews.filter((r) => r.bikeId === bike.id);
+  const avgRating = bikeReviews.length > 0 ? bikeReviews.reduce((acc, r) => acc + r.rating, 0) / bikeReviews.length : 0;
+
   const price = bike.salePrice ?? 0;
   const msg =
     lang === "vi"
@@ -133,13 +139,20 @@ function SaleCard({
         <img
           src={bike.imageUrl}
           alt={bike.name}
-          loading="lazy"
+          loading="eager"
+          fetchPriority="high"
           className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         <Badge className="absolute left-4 top-4 border border-white/20 bg-white/90 text-black backdrop-blur-md shadow-sm font-bold uppercase tracking-wider text-[10px]">
           {bike.category}
         </Badge>
+        {bikeReviews.length > 0 && (
+          <Badge className="absolute right-4 top-4 border border-amber-500/30 bg-amber-500/90 text-white backdrop-blur-md shadow-md font-bold text-[11px] z-20 flex items-center gap-1">
+            <Star className="size-3.5 fill-white" />
+            {avgRating.toFixed(1)} ({bikeReviews.length})
+          </Badge>
+        )}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <span className="bg-black/60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full backdrop-blur-sm">
             {lang === "vi" ? "Xem chi tiết" : "View Details"}

@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUI } from "@/lib/ui-context";
 
-export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => void }) {
+export function BikeCard({ bike, onOpen, priority }: { bike: Bike; onOpen: (b: Bike) => void; priority?: boolean }) {
   const { lang, t, formatVnd } = useUI();
   const { reviews } = useStore();
-  const now = new Date().toISOString().split("T")[0];
+  const d = new Date();
+  const now = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split("T")[0];
   const isBusy = bike.busyFrom && bike.busyTo && bike.busyTo >= now;
 
   const bikeReviews = reviews.filter((r) => r.bikeId === bike.id);
@@ -29,7 +30,8 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
         <img
           src={bike.imageUrl}
           alt={bike.name}
-          loading="lazy"
+          loading="eager"
+          fetchPriority="high"
           className="size-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -90,12 +92,12 @@ export function BikeCard({ bike, onOpen }: { bike: Bike; onOpen: (b: Bike) => vo
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-1.5 py-1 rounded-md border border-border/50 whitespace-nowrap">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-2 py-1.5 rounded-md border border-border/50 whitespace-nowrap">
                 <CalendarDays className="size-3 text-primary/70 shrink-0" />
                 {formatVnd(bike.pricePerWeek)}{t("per_week_short")}
               </div>
-              <div className="flex-1 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-1.5 py-1 rounded-md border border-border/50 whitespace-nowrap">
+              <div className="flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 px-2 py-1.5 rounded-md border border-border/50 whitespace-nowrap">
                 <CalendarRange className="size-3 text-primary/70 shrink-0" />
                 {formatVnd(bike.pricePerMonth)}{t("per_month_short")}
               </div>

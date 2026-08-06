@@ -49,6 +49,7 @@ export function BikeDetailDialog({
       if (bike.images && bike.images.length > 0) {
         setGallery(bike.images);
       } else {
+        setGallery(bike.imageUrl ? [bike.imageUrl] : []); // Immediately show main image
         setLoadingGallery(true);
         supabase
           .from("bikes")
@@ -58,20 +59,19 @@ export function BikeDetailDialog({
           .then(({ data }) => {
             if (data?.images?.length) {
               setGallery(data.images);
-            } else if (bike.imageUrl) {
-              setGallery([bike.imageUrl]);
             }
             setLoadingGallery(false);
           });
       }
     } else {
       setActiveImg(0);
+      setGallery([]);
     }
   }, [open, bike]);
 
   const days = useMemo(() => {
     if (!range?.from || !range?.to) return 0;
-    return Math.max(1, differenceInCalendarDays(range.to, range.from) + 1);
+    return Math.max(1, differenceInCalendarDays(range.to, range.from));
   }, [range]);
 
   useEffect(() => {

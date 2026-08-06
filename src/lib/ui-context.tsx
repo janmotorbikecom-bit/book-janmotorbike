@@ -173,7 +173,7 @@ const LS_KEY = "moto-ui-pref-v1";
 
 export function UIProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [lang, setLangState] = useState<Lang>("vi");
+  const [lang, setLangState] = useState<Lang>("en");
 
   useEffect(() => {
     try {

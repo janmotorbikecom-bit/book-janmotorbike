@@ -261,8 +261,8 @@ function Storefront() {
             </div>
           ) : (
             <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {list.map((b) => (
-                <BikeCard key={b.id} bike={b} onOpen={openBike} />
+              {list.map((b, i) => (
+                <BikeCard key={b.id} bike={b} onOpen={openBike} priority={i < 6} />
               ))}
             </div>
           )}
