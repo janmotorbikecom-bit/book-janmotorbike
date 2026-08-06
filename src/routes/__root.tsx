@@ -78,12 +78,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Jan's Motorbike — Premium Motorbike Rental" },
+      { title: "Jan's Motorbike — GET US GET BETTER!" },
       {
         name: "description",
         content: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo. Best prices guaranteed.",
       },
-      { property: "og:title", content: "Jan's Motorbike — Premium Rentals" },
+      { property: "og:title", content: "Jan's Motorbike — GET US GET BETTER!" },
       {
         property: "og:description",
         content: "Cho thuê xe máy chất lượng cao. Premium motorbike rentals with fast booking via WhatsApp & Zalo.",

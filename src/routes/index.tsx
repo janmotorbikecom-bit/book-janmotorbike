@@ -9,6 +9,7 @@ import { BikeDetailDialog } from "@/components/BikeDetailDialog";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -157,52 +158,7 @@ function Storefront() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Select value={cc === "All" ? "All" : cc.toString()} onValueChange={(v) => setCc(v === "All" ? "All" : Number(v))}>
-              <SelectTrigger className="sm:w-32 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
-                <SelectValue placeholder="CC" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All" className="font-bold uppercase tracking-wider text-xs">
-                  {lang === "vi" ? "Tất cả CC" : "All CC"}
-                </SelectItem>
-                {uniqueCcs.map((c) => (
-                  <SelectItem key={c} value={c.toString()} className="font-bold uppercase tracking-wider text-xs">
-                    {c}cc
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={cat} onValueChange={(v) => setCat(v as CategoryFilter)}>
-              <SelectTrigger className="sm:w-48 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All" className="font-bold uppercase tracking-wider text-xs">
-                  {t("cat_all")}
-                </SelectItem>
-                <SelectItem
-                  value="Automatic"
-                  className="font-bold uppercase tracking-wider text-xs"
-                >
-                  {t("cat_auto")}
-                </SelectItem>
-                <SelectItem value="Manual" className="font-bold uppercase tracking-wider text-xs">
-                  {t("cat_manual")}
-                </SelectItem>
-                <SelectItem
-                  value="Semi-Automatic"
-                  className="font-bold uppercase tracking-wider text-xs"
-                >
-                  {t("cat_semi")}
-                </SelectItem>
-                <SelectItem
-                  value="Electric"
-                  className="font-bold uppercase tracking-wider text-xs"
-                >
-                  {t("cat_electric")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+
             <Select value={sort} onValueChange={(v) => setSort(v as SortOpt)}>
               <SelectTrigger className="sm:w-52 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
                 <SelectValue />
@@ -226,6 +182,35 @@ function Storefront() {
               </SelectContent>
             </Select>
           </div>
+          
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {["All", "Automatic", "Manual", "Semi-Automatic", "Electric"].map((c) => (
+              <Button
+                key={c}
+                variant={cat === c ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCat(c as CategoryFilter)}
+                className="rounded-full font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+              >
+                {c === "All" ? t("cat_all") : c === "Automatic" ? t("cat_auto") : c === "Manual" ? t("cat_manual") : c === "Semi-Automatic" ? t("cat_semi") : t("cat_electric")}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {["All", ...uniqueCcs].map((c) => (
+              <Button
+                key={c}
+                variant={cc === c ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCc(c as any)}
+                className="rounded-full font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+              >
+                {c === "All" ? (lang === "vi" ? "Tất cả phân khối" : "All CC") : `${c}cc`}
+              </Button>
+            ))}
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-2 py-2">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">
               {lang === "vi" ? "Giá tối đa/ngày" : "Max Price/Day"}:{" "}

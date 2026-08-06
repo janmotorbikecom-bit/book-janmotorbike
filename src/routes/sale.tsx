@@ -1,12 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { MessageCircle, Gauge, Star } from "lucide-react";
-import { StoreProvider, useStore, type Bike } from "@/lib/store";
+import { useState, useMemo } from "react";
+import { MessageCircle, Gauge, Star, Search } from "lucide-react";
+import { StoreProvider, useStore, type Bike, type BikeCategory } from "@/lib/store";
 import { useUI } from "@/lib/ui-context";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SaleDetailDialog } from "@/components/SaleDetailDialog";
+
+type CategoryFilter = "All" | BikeCategory;
+type BrandFilter = "All" | string;
+type SortOpt = "featured" | "price-asc" | "price-desc";
 
 export const Route = createFileRoute("/sale")({
   head: () => ({
@@ -25,10 +39,43 @@ export const Route = createFileRoute("/sale")({
 
 function SalePage() {
   const { bikes, settings, loading } = useStore();
-  const { formatVnd, lang } = useUI();
-  const list = bikes.filter((b) => b.isForSale && b.available && (b.salePrice ?? 0) > 0);
+  const { formatVnd, lang, t } = useUI();
   const [selected, setSelected] = useState<Bike | null>(null);
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState<CategoryFilter>("All");
+  const [brand, setBrand] = useState<BrandFilter>("All");
+  const [cc, setCc] = useState<"All" | number>("All");
+  const [priceMax, setPriceMax] = useState<number[]>([100000000]);
+  const [sort, setSort] = useState<SortOpt>("featured");
+
+  const saleBikes = useMemo(() => bikes.filter((b) => b.isForSale && b.available && (b.salePrice ?? 0) > 0), [bikes]);
+
+  const uniqueCcs = useMemo(() => {
+    const ccs = saleBikes.map((b) => b.engineCc).filter((c) => c != null);
+    return Array.from(new Set(ccs)).sort((a, b) => a - b);
+  }, [saleBikes]);
+
+  const uniqueBrands = useMemo(() => {
+    const b = saleBikes.map((x) => x.brand).filter((x): x is string => !!x && x !== "Other");
+    return Array.from(new Set(b)).sort();
+  }, [saleBikes]);
+
+  const list = useMemo(() => {
+    let out = saleBikes;
+    if (cat !== "All") out = out.filter((b) => b.category === cat);
+    if (brand !== "All") out = out.filter((b) => b.brand === brand);
+    if (cc !== "All") out = out.filter((b) => b.engineCc === cc);
+    if (q.trim()) {
+      const s = q.toLowerCase();
+      out = out.filter((b) => b.name.toLowerCase().includes(s));
+    }
+    out = out.filter((b) => (b.salePrice ?? 0) <= priceMax[0]);
+
+    if (sort === "price-asc") out = [...out].sort((a, b) => (a.salePrice ?? 0) - (b.salePrice ?? 0));
+    if (sort === "price-desc") out = [...out].sort((a, b) => (b.salePrice ?? 0) - (a.salePrice ?? 0));
+    return out;
+  }, [saleBikes, cat, brand, cc, sort, q, priceMax]);
 
   function openBike(b: Bike) {
     setSelected(b);
@@ -38,15 +85,19 @@ function SalePage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <section className="border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <p className="mb-3 inline-block rounded-full bg-accent/20 px-3 py-1 text-xs font-medium text-accent">
+      <section
+        className="relative border-b border-border text-primary-foreground bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url('/Jan-motorbike-customers-motorbike-for-rent-in-hcm.jpg')` }}
+      >
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 md:py-24 text-center md:text-left drop-shadow-md">
+          <p className="mb-4 inline-block rounded-full bg-accent/90 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary-foreground drop-shadow-sm">
             {lang === "vi" ? "Xe thanh lý" : "For Sale"}
           </p>
-          <h1 className="font-display text-4xl font-bold md:text-5xl">
+          <h1 className="max-w-3xl font-display text-4xl font-black uppercase tracking-widest leading-tight md:text-6xl text-white drop-shadow-lg">
             {lang === "vi" ? "Xe máy đang bán" : "Bikes for Sale"}
           </h1>
-          <p className="mt-3 max-w-xl text-primary-foreground/70">
+          <p className="mt-6 max-w-xl text-white/90 font-medium leading-relaxed mx-auto md:mx-0 drop-shadow-md">
             {lang === "vi"
               ? "Liên hệ trực tiếp với chủ xe qua WhatsApp để mua."
               : "Contact the owner directly via WhatsApp to buy."}
@@ -55,6 +106,102 @@ function SalePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-4 shadow-sm mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t("search_placeholder")}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                className="pl-11 h-12 rounded-xl border-muted bg-muted/50 font-medium"
+              />
+            </div>
+            <Select value={brand} onValueChange={setBrand}>
+              <SelectTrigger className="sm:w-40 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
+                <SelectValue placeholder="Brand" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All" className="font-bold uppercase tracking-wider text-xs">
+                  {lang === "vi" ? "Tất cả hãng" : "All Brands"}
+                </SelectItem>
+                {uniqueBrands.map((b) => (
+                  <SelectItem key={b} value={b} className="font-bold uppercase tracking-wider text-xs">
+                    {b === "Khác" ? (lang === "vi" ? "Khác" : "Other") : b}
+                  </SelectItem>
+                ))}
+                <SelectItem value="Other" className="font-bold uppercase tracking-wider text-xs">
+                  {lang === "vi" ? "Khác" : "Other"}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={(v) => setSort(v as SortOpt)}>
+              <SelectTrigger className="sm:w-52 h-12 rounded-xl font-bold uppercase tracking-wider text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="featured" className="font-bold uppercase tracking-wider text-xs">
+                  {t("sort_featured")}
+                </SelectItem>
+                <SelectItem
+                  value="price-asc"
+                  className="font-bold uppercase tracking-wider text-xs"
+                >
+                  {t("sort_asc")}
+                </SelectItem>
+                <SelectItem
+                  value="price-desc"
+                  className="font-bold uppercase tracking-wider text-xs"
+                >
+                  {t("sort_desc")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {["All", "Automatic", "Manual", "Semi-Automatic", "Electric"].map((c) => (
+              <Button
+                key={c}
+                variant={cat === c ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCat(c as CategoryFilter)}
+                className="rounded-full font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+              >
+                {c === "All" ? t("cat_all") : c === "Automatic" ? t("cat_auto") : c === "Manual" ? t("cat_manual") : c === "Semi-Automatic" ? t("cat_semi") : t("cat_electric")}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {["All", ...uniqueCcs].map((c) => (
+              <Button
+                key={c}
+                variant={cc === c ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCc(c as any)}
+                className="rounded-full font-bold uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+              >
+                {c === "All" ? (lang === "vi" ? "Tất cả phân khối" : "All CC") : `${c}cc`}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-2 py-2">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground shrink-0">
+              {lang === "vi" ? "Giá tối đa" : "Max Price"}:{" "}
+              <span className="text-foreground">{formatVnd(priceMax[0])}</span>
+            </Label>
+            <Slider
+              value={priceMax}
+              onValueChange={setPriceMax}
+              max={100000000}
+              step={1000000}
+              className="flex-1"
+            />
+          </div>
+        </div>
+
         {loading && list.length === 0 ? (
           // Skeleton cards while loading
           <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

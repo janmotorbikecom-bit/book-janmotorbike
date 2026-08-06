@@ -1,10 +1,12 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Bike, Moon, Sun, Languages } from "lucide-react";
 import { useUI } from "@/lib/ui-context";
 import { Button } from "@/components/ui/button";
 
 export function SiteHeader() {
   const { theme, toggleTheme, lang, toggleLang, t } = useUI();
+  const location = useLocation();
+  const isRentPage = location.pathname === "/";
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -21,14 +23,11 @@ export function SiteHeader() {
           </div>
         </Link>
         <nav className="flex items-center gap-1 text-sm font-medium">
-          <Link
-            to="/"
-            className="rounded-md px-3 py-2 text-foreground/70 hover:text-foreground"
-            activeOptions={{ exact: true }}
-            activeProps={{ className: "rounded-md px-3 py-2 text-foreground" }}
-          >
-            {t("browse")}
-          </Link>
+          {!isRentPage && (
+            <Button asChild variant="default" size="sm" className="mr-2 rounded-full font-bold uppercase tracking-wider text-xs shadow-sm bg-accent text-accent-foreground hover:bg-accent/90">
+              <Link to="/">{lang === "vi" ? "Thuê xe" : "Rent a Bike"}</Link>
+            </Button>
+          )}
 
 
           <Button
