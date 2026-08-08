@@ -27,7 +27,7 @@ export const Route = createFileRoute("/sale")({
     meta: [
       { title: "Bikes for Sale — JAN'S MOTORBIKE" },
       { name: "description", content: "Motorbikes available for purchase." },
-      { name: "robots", content: "noindex, nofollow" },
+      { name: "robots", content: "index, follow" },
     ],
   }),
   component: () => (

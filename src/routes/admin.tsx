@@ -18,7 +18,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { t } = useUI();
+  const { t, lang } = useUI();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [role, setRole] = useState<"admin" | "staff" | null>(null);
   const [username, setUsername] = useState("");
